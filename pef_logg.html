@@ -295,11 +295,13 @@ let predictedPEF = null;
 let pefHistory = JSON.parse(localStorage.getItem("pefHistory") || "[]");
 
 function calculatePredictedPEF(age, sex, height) {
-  if (sex === "male") {
-    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
-  } else if (sex === "female") {
-    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
-  }
+  
+if (sex === "male") {
+  predictedPEF = Math.round((0.553 * height - 0.013 * age - 1.57) * 60);
+} else if (sex === "female") {
+  predictedPEF = Math.round((0.386 * height - 0.016 * age + 2.62) * 60);
+}
+
 }
 
 function updatePredictedDisplay() {
