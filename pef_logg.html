@@ -19,6 +19,74 @@
   </style>
 </head>
 <body>
+
+<h3>Mätläge</h3>
+<button onclick="startMeasurementPeriod()">Starta mätperiod (14 dagar)</button>
+<button onclick="endMeasurementPeriod()">Avsluta mätperiod</button>
+<p id="period-info">Ingen mätperiod aktiv</p>
+<div id="instructions" style="display:none;">
+  <h4>Anvisningar för mätperiod</h4>
+  <ul>
+    <li>Mät <strong>morgon och kväll</strong></li>
+    <li>Gör <strong>tre blås</strong> varje gång</li>
+    <li>Mata in <strong>bästa värdet</strong> manuellt</li>
+  </ul>
+</div>
+
+<h3>Profil</h3>
+<form id="profile-form">
+  <label for="age">Ålder:</label>
+  <input type="number" id="age" required><br>
+
+  <label for="sex">Kön:</label>
+  <select id="sex" required>
+    <option value="">Välj</option>
+    <option value="male">Man</option>
+    <option value="female">Kvinna</option>
+  </select><br>
+
+  <label for="height">Längd (cm):</label>
+  <input type="number" id="height" required><br>
+
+  <button type="submit">Spara profil</button>
+
+<p id="predicted-pef-display"><strong>Förväntat PEF:</strong> -- L/min</p>
+
+</form>
+<script>
+let predictedPEF = null;
+
+document.getElementById('profile-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const age = parseInt(document.getElementById('age').value);
+  const sex = document.getElementById('sex').value;
+  const height = parseInt(document.getElementById('height').value);
+
+  if (sex === 'male') {
+    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
+  } else if (sex === 'female') {
+    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
+  }
+
+  alert('Förväntat PEF-värde: ' + predictedPEF + ' L/min');
+});
+
+function jämförPEF() {
+  const input = document.getElementById('pefinput');
+  if (!input || !predictedPEF) return;
+
+  const measuredPEF = parseInt(input.value);
+  if (isNaN(measuredPEF)) {
+    alert('Fyll i ett giltigt PEF-värde.');
+    return;
+  }
+
+  const percent = Math.round((measuredPEF / predictedPEF) * 100);
+  alert('Din PEF är ' + measuredPEF + ' L/min (' + percent + '% av förväntat)');
+}
+</script>
+
   <h1>PEF-logg</h1>
 
   <form id="pefForm">
@@ -28,6 +96,9 @@
   </form>
 
   <button onclick="exportCSV()">Exportera till CSV</button>
+
+<button onclick="clearHistory()">Rensa historik</button>
+
   <button onclick="clearLog()">Rensa logg</button>
 
   <div id="logg">
@@ -127,5 +198,196 @@
 
     loadLog();
   </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let predictedPEF = null;
+let pefHistory = JSON.parse(localStorage.getItem('pefHistory')) || [];
+
+
+function updatePredictedDisplay() {
+  document.getElementById('predicted-pef-display').innerHTML =
+    "<strong>Förväntat PEF:</strong> " + predictedPEF + " L/min";
+}
+
+
+function startMeasurementPeriod() {
+  const start = new Date();
+  localStorage.setItem('measurementStart', start.toISOString());
+  const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
+  document.getElementById('period-info').innerText =
+    'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
+  document.getElementById('instructions').style.display = 'block';
+}
+
+function isInMeasurementPeriod(dateStr) {
+  const startStr = localStorage.getItem('measurementStart');
+  if (!startStr) return false;
+  const start = new Date(startStr);
+  const end = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const checkDate = new Date(dateStr);
+  return checkDate >= start && checkDate <= end;
+}
+
+function calculatePredictedPEF(age, sex, height) {
+  if (sex === 'male') {
+    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
+  } else if (sex === 'female') {
+    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
+  }
+}
+
+window.addEventListener('load', () => {
+  showMeasurementPeriod();
+  const profile = JSON.parse(localStorage.getItem('pefProfile'));
+  if (profile) {
+    document.getElementById('age').value = profile.age;
+    document.getElementById('sex').value = profile.sex;
+    document.getElementById('height').value = profile.height;
+    calculatePredictedPEF(profile.age, profile.sex, profile.height);
+  updatePredictedDisplay();
+  }
+  updateChart();
+});
+
+document.getElementById('profile-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const age = parseInt(document.getElementById('age').value);
+  const sex = document.getElementById('sex').value;
+  const height = parseInt(document.getElementById('height').value);
+  const profile = { age, sex, height };
+  localStorage.setItem('pefProfile', JSON.stringify(profile));
+  calculatePredictedPEF(age, sex, height);
+  updatePredictedDisplay();
+  alert('Profil sparad! Förväntat PEF: ' + predictedPEF + ' L/min');
+});
+
+function jämförPEF() {
+  const input = document.getElementById('pefinput');
+  if (!input || !predictedPEF) return;
+
+  const measuredPEF = parseInt(input.value);
+  if (isNaN(measuredPEF)) {
+    alert('Fyll i ett giltigt PEF-värde.');
+    return;
+  }
+
+  const percent = Math.round((measuredPEF / predictedPEF) * 100);
+  alert('Din PEF är ' + measuredPEF + ' L/min (' + percent + '% av förväntat)');
+
+  
+  const timestamp = new Date().toLocaleString();
+  const isPeriod = isInMeasurementPeriod(new Date());
+  pefHistory.push({ value: measuredPEF, time: timestamp, typ: isPeriod ? "period" : "kontroll" });
+
+  pefHistory.push({ value: measuredPEF, time: timestamp });
+  localStorage.setItem('pefHistory', JSON.stringify(pefHistory));
+  updateChart();
+}
+
+
+function showMeasurementPeriod() {
+  const startStr = localStorage.getItem('measurementStart');
+  if (!startStr) return;
+  const start = new Date(startStr);
+  const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
+  document.getElementById('period-info').innerText =
+    'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
+  document.getElementById('instructions').style.display = 'block';
+}
+
+
+function endMeasurementPeriod() {
+  localStorage.removeItem('measurementStart');
+  document.getElementById('period-info').innerText = 'Ingen mätperiod aktiv';
+  document.getElementById('instructions').style.display = 'none';
+}
+
+
+
+function updateChart() {
+  const ctx = document.getElementById('pefChart').getContext('2d');
+  const filter = document.getElementById('filter-type')?.value || 'all';
+
+  let filtered = [...pefHistory];
+  if (filter !== 'all') {
+    filtered = pefHistory.filter(d => d.typ === filter);
+  }
+
+  const labels = filtered.map(d => d.time);
+  const data = filtered.map(d => d.value);
+
+  // Beräkna medelvärde för mätperiod
+  const periodValues = pefHistory.filter(d => d.typ === "period").map(d => d.value);
+  const avg = periodValues.length > 0
+    ? periodValues.reduce((sum, v) => sum + v, 0) / periodValues.length
+    : null;
+
+  const avgLine = avg ? new Array(data.length).fill(avg) : [];
+
+  if (window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'PEF-värden',
+          data: data,
+          borderColor: '#0077cc',
+          backgroundColor: '#0077cc',
+          tension: 0.2,
+          borderWidth: 2
+        },
+        avg ? {
+          label: 'Medelvärde (mätperiod)',
+          data: avgLine,
+          borderColor: 'green',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+          tension: 0.2
+        } : null
+      ].filter(Boolean)
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: false
+        }
+      }
+    }
+  });
+
+  // Visa sammanfattning
+  if (data.length > 0) {
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const mean = Math.round(data.reduce((a, b) => a + b, 0) / data.length);
+    document.getElementById('summary-stats').innerText =
+      `Antal mätningar: ${data.length}, Min: ${min}, Max: ${max}, Medel: ${mean}`;
+  } else {
+    document.getElementById('summary-stats').innerText = 'Ingen data att visa';
+  }
+
+}
+
+
+
+function exportCSV() {
+  let csv = "Tid,PEF\n";
+  pefHistory.forEach(item => {
+    csv += `${item.time},${item.value}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pef_history.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
 </body>
 </html>
