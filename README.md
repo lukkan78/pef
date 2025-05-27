@@ -1,21 +1,12 @@
 # PEF-logg (Progressive Web App)
 
-Detta är en enkel och snygg Progressive Web App (PWA) för att logga dina PEF-värden (Peak Expiratory Flow), inklusive beräkning av förväntat värde och jämförelse över tid.
+Detta är en enkel och snygg Progressive Web App (PWA) för att logga dina PEF-värden (Peak Expiratory Flow).
 
 ## Funktioner
 
 - Lägg till PEF-värden med datum och tid
-- Spara bästa värdet manuellt efter 3 blåsningar
-- Profilinmatning: ålder, kön och längd
-- Automatisk beräkning av **förväntat PEF** enligt **Nunn & Gregg-formeln**
-- Jämförelse i procent mot förväntat värde
-- Stöd för **mätperioder (t.ex. 14 dagar)** med instruktioner
-- Mätningar märks som **mätperiod** eller **kontrollmätning**
-- Visuell graf (Chart.js) med färgkod:
-  - **Röd** = mätperiod
-  - **Blå** = kontrollmätning
-- Filter: visa endast kontroll, endast mätperiod eller båda
-- Sammanfattning med antal, min, max och medelvärde
+- Värden sparas lokalt i webbläsaren (localStorage)
+- Visuell graf över utvecklingen (Chart.js)
 - Export till CSV-fil
 - Fungerar offline (service worker)
 - Kan installeras som app på mobil (iOS/Android)

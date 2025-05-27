@@ -10,15 +10,17 @@
   <meta name="theme-color" content="#ffffff">
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f5f5f5; }
-    h1, h2 { text-align: center; }
-    input, button { padding: 0.5em; margin: 0.5em 0; width: 100%; font-size: 1em; }
+    h1, h2, h3, h4 { text-align: center; }
+    input, button, select { padding: 0.5em; margin: 0.5em 0; width: 100%; font-size: 1em; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; background: #fff; }
     canvas { max-width: 100%; margin-top: 2em; }
-    #logg { margin-top: 1em; }
+    #logg, #summary-box { margin-top: 2em; }
   </style>
 </head>
 <body>
+
+<h1>PEF-logg</h1>
 
 <h3>Mätläge</h3>
 <button onclick="startMeasurementPeriod()">Starta mätperiod (14 dagar)</button>
@@ -36,180 +38,53 @@
 <h3>Profil</h3>
 <form id="profile-form">
   <label for="age">Ålder:</label>
-  <input type="number" id="age" required><br>
+  <input type="number" id="age" required>
 
   <label for="sex">Kön:</label>
   <select id="sex" required>
     <option value="">Välj</option>
     <option value="male">Man</option>
     <option value="female">Kvinna</option>
-  </select><br>
+  </select>
 
   <label for="height">Längd (cm):</label>
-  <input type="number" id="height" required><br>
+  <input type="number" id="height" required>
 
   <button type="submit">Spara profil</button>
-
-<p id="predicted-pef-display"><strong>Förväntat PEF:</strong> -- L/min</p>
-
+  <p id="predicted-pef-display"><strong>Förväntat PEF:</strong> -- L/min</p>
 </form>
-<script>
-let predictedPEF = null;
 
-document.getElementById('profile-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const age = parseInt(document.getElementById('age').value);
-  const sex = document.getElementById('sex').value;
-  const height = parseInt(document.getElementById('height').value);
-
-  if (sex === 'male') {
-    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
-  } else if (sex === 'female') {
-    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
-  }
-
-  alert('Förväntat PEF-värde: ' + predictedPEF + ' L/min');
-});
-
-function jämförPEF() {
-  const input = document.getElementById('pefinput');
-  if (!input || !predictedPEF) return;
-
-  const measuredPEF = parseInt(input.value);
-  if (isNaN(measuredPEF)) {
-    alert('Fyll i ett giltigt PEF-värde.');
-    return;
-  }
-
-  const percent = Math.round((measuredPEF / predictedPEF) * 100);
-  alert('Din PEF är ' + measuredPEF + ' L/min (' + percent + '% av förväntat)');
-}
-</script>
-
-  <h1>PEF-logg</h1>
-
-  <form id="pefForm">
-    <label for="pef">PEF-värde (L/min):</label>
-    <input type="number" id="pef" required min="0">
-    <button type="submit">Spara värde</button>
-  </form>
-
-  <button onclick="exportCSV()">Exportera till CSV</button>
-
+<h3>Ny mätning</h3>
+<label for="pef">PEF-värde (L/min):</label>
+<input type="number" id="pef" required min="0">
+<button onclick="jämförPEF()">Jämför och spara</button>
+<button onclick="exportCSV()">Exportera till CSV</button>
 <button onclick="clearHistory()">Rensa historik</button>
 
-  <button onclick="clearLog()">Rensa logg</button>
+<h3>Logg</h3>
+<canvas id="pefChart"></canvas>
 
-  <div id="logg">
-    <h2>Loggade värden</h2>
-    <table id="loggTabell">
-      <thead><tr><th>Datum</th><th>Tid</th><th>PEF</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<h4>Filtrera visning</h4>
+<select id="filter-type" onchange="updateChart()">
+  <option value="all">Visa alla</option>
+  <option value="period">Endast mätperiod</option>
+  <option value="kontroll">Endast kontrollmätningar</option>
+</select>
 
-  <canvas id="pefChart"></canvas>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const form = document.getElementById("pefForm");
-    const tableBody = document.querySelector("#loggTabell tbody");
-    const ctx = document.getElementById("pefChart").getContext("2d");
-    let chart;
-
-    function loadLog() {
-      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
-      tableBody.innerHTML = "";
-      const labels = [];
-      const data = [];
-
-      log.forEach(entry => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${entry.date}</td><td>${entry.time}</td><td>${entry.pef}</td>`;
-        tableBody.appendChild(row);
-        labels.push(`${entry.date} ${entry.time}`);
-        data.push(Number(entry.pef));
-      });
-
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'PEF (L/min)',
-            data: data,
-            fill: false,
-            borderColor: 'blue',
-            tension: 0.1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true }
-          },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const pef = document.getElementById("pef").value;
-      const now = new Date();
-      const entry = {
-        date: now.toLocaleDateString("sv-SE"),
-        time: now.toLocaleTimeString("sv-SE", {hour: "2-digit", minute: "2-digit"}),
-        pef: pef
-      };
-      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
-      log.push(entry);
-      localStorage.setItem("pefLogg", JSON.stringify(log));
-      document.getElementById("pef").value = "";
-      loadLog();
-    });
-
-    function exportCSV() {
-      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
-      if (log.length === 0) return alert("Inga värden att exportera.");
-      const csv = "Datum,Tid,PEF\n" + log.map(e => `${e.date},${e.time},${e.pef}`).join("\n");
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "pef_logg.csv";
-      a.click();
-    }
-
-    function clearLog() {
-      if (confirm("Är du säker på att du vill rensa loggen?")) {
-        localStorage.removeItem("pefLogg");
-        loadLog();
-      }
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-
-    loadLog();
-  </script>
+<div id="summary-box">
+  <h4>Sammanfattning</h4>
+  <p id="summary-stats">Ingen data att visa</p>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let predictedPEF = null;
-let pefHistory = JSON.parse(localStorage.getItem('pefHistory')) || [];
-
+let pefHistory = JSON.parse(localStorage.getItem('pefHistory') || "[]");
 
 function updatePredictedDisplay() {
   document.getElementById('predicted-pef-display').innerHTML =
     "<strong>Förväntat PEF:</strong> " + predictedPEF + " L/min";
 }
-
 
 function startMeasurementPeriod() {
   const start = new Date();
@@ -220,13 +95,18 @@ function startMeasurementPeriod() {
   document.getElementById('instructions').style.display = 'block';
 }
 
-function isInMeasurementPeriod(dateStr) {
+function endMeasurementPeriod() {
+  localStorage.removeItem('measurementStart');
+  document.getElementById('period-info').innerText = 'Ingen mätperiod aktiv';
+  document.getElementById('instructions').style.display = 'none';
+}
+
+function isInMeasurementPeriod(date) {
   const startStr = localStorage.getItem('measurementStart');
   if (!startStr) return false;
   const start = new Date(startStr);
   const end = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
-  const checkDate = new Date(dateStr);
-  return checkDate >= start && checkDate <= end;
+  return date >= start && date <= end;
 }
 
 function calculatePredictedPEF(age, sex, height) {
@@ -236,19 +116,6 @@ function calculatePredictedPEF(age, sex, height) {
     predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
   }
 }
-
-window.addEventListener('load', () => {
-  showMeasurementPeriod();
-  const profile = JSON.parse(localStorage.getItem('pefProfile'));
-  if (profile) {
-    document.getElementById('age').value = profile.age;
-    document.getElementById('sex').value = profile.sex;
-    document.getElementById('height').value = profile.height;
-    calculatePredictedPEF(profile.age, profile.sex, profile.height);
-  updatePredictedDisplay();
-  }
-  updateChart();
-});
 
 document.getElementById('profile-form').addEventListener('submit', function (e) {
   e.preventDefault();
@@ -263,66 +130,37 @@ document.getElementById('profile-form').addEventListener('submit', function (e) 
 });
 
 function jämförPEF() {
-  const input = document.getElementById('pefinput');
-  if (!input || !predictedPEF) return;
-
+  const input = document.getElementById('pef');
   const measuredPEF = parseInt(input.value);
-  if (isNaN(measuredPEF)) {
-    alert('Fyll i ett giltigt PEF-värde.');
+  if (isNaN(measuredPEF) || !predictedPEF) {
+    alert('Fyll i ett giltigt PEF och profil först.');
     return;
   }
 
   const percent = Math.round((measuredPEF / predictedPEF) * 100);
   alert('Din PEF är ' + measuredPEF + ' L/min (' + percent + '% av förväntat)');
 
-  
-  const timestamp = new Date().toLocaleString();
-  const isPeriod = isInMeasurementPeriod(new Date());
-  pefHistory.push({ value: measuredPEF, time: timestamp, typ: isPeriod ? "period" : "kontroll" });
-
-  pefHistory.push({ value: measuredPEF, time: timestamp });
+  const now = new Date();
+  const time = now.toLocaleString();
+  const isPeriod = isInMeasurementPeriod(now);
+  pefHistory.push({ value: measuredPEF, time: time, typ: isPeriod ? "period" : "kontroll" });
   localStorage.setItem('pefHistory', JSON.stringify(pefHistory));
   updateChart();
 }
-
-
-function showMeasurementPeriod() {
-  const startStr = localStorage.getItem('measurementStart');
-  if (!startStr) return;
-  const start = new Date(startStr);
-  const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
-  document.getElementById('period-info').innerText =
-    'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
-  document.getElementById('instructions').style.display = 'block';
-}
-
-
-function endMeasurementPeriod() {
-  localStorage.removeItem('measurementStart');
-  document.getElementById('period-info').innerText = 'Ingen mätperiod aktiv';
-  document.getElementById('instructions').style.display = 'none';
-}
-
-
 
 function updateChart() {
   const ctx = document.getElementById('pefChart').getContext('2d');
   const filter = document.getElementById('filter-type')?.value || 'all';
 
   let filtered = [...pefHistory];
-  if (filter !== 'all') {
-    filtered = pefHistory.filter(d => d.typ === filter);
-  }
+  if (filter !== 'all') filtered = pefHistory.filter(d => d.typ === filter);
 
   const labels = filtered.map(d => d.time);
   const data = filtered.map(d => d.value);
-
-  // Beräkna medelvärde för mätperiod
   const periodValues = pefHistory.filter(d => d.typ === "period").map(d => d.value);
   const avg = periodValues.length > 0
     ? periodValues.reduce((sum, v) => sum + v, 0) / periodValues.length
     : null;
-
   const avgLine = avg ? new Array(data.length).fill(avg) : [];
 
   if (window.myChart) window.myChart.destroy();
@@ -359,7 +197,6 @@ function updateChart() {
     }
   });
 
-  // Visa sammanfattning
   if (data.length > 0) {
     const min = Math.min(...data);
     const max = Math.max(...data);
@@ -369,15 +206,22 @@ function updateChart() {
   } else {
     document.getElementById('summary-stats').innerText = 'Ingen data att visa';
   }
-
 }
 
-
+function clearHistory() {
+  if (confirm("Vill du verkligen radera all PEF-historik?")) {
+    localStorage.removeItem('pefHistory');
+    pefHistory = [];
+    updateChart();
+  }
+}
 
 function exportCSV() {
-  let csv = "Tid,PEF\n";
+  let csv = "Tid,PEF
+";
   pefHistory.forEach(item => {
-    csv += `${item.time},${item.value}\n`;
+    csv += `${item.time},${item.value}
+`;
   });
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -387,7 +231,26 @@ function exportCSV() {
   a.click();
   URL.revokeObjectURL(url);
 }
-</script>
 
+window.addEventListener('load', () => {
+  const profile = JSON.parse(localStorage.getItem('pefProfile'));
+  if (profile) {
+    document.getElementById('age').value = profile.age;
+    document.getElementById('sex').value = profile.sex;
+    document.getElementById('height').value = profile.height;
+    calculatePredictedPEF(profile.age, profile.sex, profile.height);
+    updatePredictedDisplay();
+  }
+  const startStr = localStorage.getItem('measurementStart');
+  if (startStr) {
+    const start = new Date(startStr);
+    const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
+    document.getElementById('period-info').innerText =
+      'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
+    document.getElementById('instructions').style.display = 'block';
+  }
+  updateChart();
+});
+</script>
 </body>
 </html>
