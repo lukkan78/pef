@@ -11,38 +11,118 @@
   <style>
     body { font-family: sans-serif; padding: 1em; background: #f5f5f5; }
     h1, h2, h3, h4 { text-align: center; }
-    input, button, select { padding: 0.5em; margin: 0.5em 0; width: 100%; font-size: 1em; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; background: #fff; }
+    input, select, button { padding: 0.5em; margin: 0.5em 0; width: 100%; font-size: 1em; }
     canvas { max-width: 100%; margin-top: 2em; }
-    #logg, #summary-box { margin-top: 2em; }
+    #summary-box { margin-top: 1.5em; }
+    #result-feedback { font-weight: bold; text-align: center; margin-top: 1em; }
   </style>
 </head>
 <body>
 
 <h1>PEF-logg</h1>
 
-<button onclick="kontrollmatning()" style="background:#0077cc;color:white;font-weight:bold;">Gör en kontrollmätning</button>
-<p id="kontroll-resultat"></p>
-
-
-<h3>Mätläge</h3>
-<button onclick="startMeasurementPeriod()">Starta mätperiod (14 dagar)</button>
-<button onclick="endMeasurementPeriod()">Avsluta mätperiod</button>
-<p id="period-info">Ingen mätperiod aktiv</p>
-<div id="instructions" style="display:none;">
-  <h4>Anvisningar för mätperiod</h4>
-  <ul>
-    <li>Mät <strong>morgon och kväll</strong></li>
-    <li>Gör <strong>tre blås</strong> varje gång</li>
-    <li>Mata in <strong>bästa värdet</strong> manuellt</li>
-  </ul>
-</div>
-
 <h3>Profil</h3>
 <form id="profile-form">
   <label for="age">Ålder:</label>
-  <input type="number" id="age" required>
+  <select id="age" required>
+    <option value="">Välj ålder</option>
+<option value="5">5 år</option>
+<option value="6">6 år</option>
+<option value="7">7 år</option>
+<option value="8">8 år</option>
+<option value="9">9 år</option>
+<option value="10">10 år</option>
+<option value="11">11 år</option>
+<option value="12">12 år</option>
+<option value="13">13 år</option>
+<option value="14">14 år</option>
+<option value="15">15 år</option>
+<option value="16">16 år</option>
+<option value="17">17 år</option>
+<option value="18">18 år</option>
+<option value="19">19 år</option>
+<option value="20">20 år</option>
+<option value="21">21 år</option>
+<option value="22">22 år</option>
+<option value="23">23 år</option>
+<option value="24">24 år</option>
+<option value="25">25 år</option>
+<option value="26">26 år</option>
+<option value="27">27 år</option>
+<option value="28">28 år</option>
+<option value="29">29 år</option>
+<option value="30">30 år</option>
+<option value="31">31 år</option>
+<option value="32">32 år</option>
+<option value="33">33 år</option>
+<option value="34">34 år</option>
+<option value="35">35 år</option>
+<option value="36">36 år</option>
+<option value="37">37 år</option>
+<option value="38">38 år</option>
+<option value="39">39 år</option>
+<option value="40">40 år</option>
+<option value="41">41 år</option>
+<option value="42">42 år</option>
+<option value="43">43 år</option>
+<option value="44">44 år</option>
+<option value="45">45 år</option>
+<option value="46">46 år</option>
+<option value="47">47 år</option>
+<option value="48">48 år</option>
+<option value="49">49 år</option>
+<option value="50">50 år</option>
+<option value="51">51 år</option>
+<option value="52">52 år</option>
+<option value="53">53 år</option>
+<option value="54">54 år</option>
+<option value="55">55 år</option>
+<option value="56">56 år</option>
+<option value="57">57 år</option>
+<option value="58">58 år</option>
+<option value="59">59 år</option>
+<option value="60">60 år</option>
+<option value="61">61 år</option>
+<option value="62">62 år</option>
+<option value="63">63 år</option>
+<option value="64">64 år</option>
+<option value="65">65 år</option>
+<option value="66">66 år</option>
+<option value="67">67 år</option>
+<option value="68">68 år</option>
+<option value="69">69 år</option>
+<option value="70">70 år</option>
+<option value="71">71 år</option>
+<option value="72">72 år</option>
+<option value="73">73 år</option>
+<option value="74">74 år</option>
+<option value="75">75 år</option>
+<option value="76">76 år</option>
+<option value="77">77 år</option>
+<option value="78">78 år</option>
+<option value="79">79 år</option>
+<option value="80">80 år</option>
+<option value="81">81 år</option>
+<option value="82">82 år</option>
+<option value="83">83 år</option>
+<option value="84">84 år</option>
+<option value="85">85 år</option>
+<option value="86">86 år</option>
+<option value="87">87 år</option>
+<option value="88">88 år</option>
+<option value="89">89 år</option>
+<option value="90">90 år</option>
+<option value="91">91 år</option>
+<option value="92">92 år</option>
+<option value="93">93 år</option>
+<option value="94">94 år</option>
+<option value="95">95 år</option>
+<option value="96">96 år</option>
+<option value="97">97 år</option>
+<option value="98">98 år</option>
+<option value="99">99 år</option>
+<option value="100">100 år</option>
+  </select>
 
   <label for="sex">Kön:</label>
   <select id="sex" required>
@@ -52,167 +132,276 @@
   </select>
 
   <label for="height">Längd (cm):</label>
-  <input type="number" id="height" required>
+  <select id="height" required>
+    <option value="">Välj längd</option>
+<option value="100">100 cm</option>
+<option value="101">101 cm</option>
+<option value="102">102 cm</option>
+<option value="103">103 cm</option>
+<option value="104">104 cm</option>
+<option value="105">105 cm</option>
+<option value="106">106 cm</option>
+<option value="107">107 cm</option>
+<option value="108">108 cm</option>
+<option value="109">109 cm</option>
+<option value="110">110 cm</option>
+<option value="111">111 cm</option>
+<option value="112">112 cm</option>
+<option value="113">113 cm</option>
+<option value="114">114 cm</option>
+<option value="115">115 cm</option>
+<option value="116">116 cm</option>
+<option value="117">117 cm</option>
+<option value="118">118 cm</option>
+<option value="119">119 cm</option>
+<option value="120">120 cm</option>
+<option value="121">121 cm</option>
+<option value="122">122 cm</option>
+<option value="123">123 cm</option>
+<option value="124">124 cm</option>
+<option value="125">125 cm</option>
+<option value="126">126 cm</option>
+<option value="127">127 cm</option>
+<option value="128">128 cm</option>
+<option value="129">129 cm</option>
+<option value="130">130 cm</option>
+<option value="131">131 cm</option>
+<option value="132">132 cm</option>
+<option value="133">133 cm</option>
+<option value="134">134 cm</option>
+<option value="135">135 cm</option>
+<option value="136">136 cm</option>
+<option value="137">137 cm</option>
+<option value="138">138 cm</option>
+<option value="139">139 cm</option>
+<option value="140">140 cm</option>
+<option value="141">141 cm</option>
+<option value="142">142 cm</option>
+<option value="143">143 cm</option>
+<option value="144">144 cm</option>
+<option value="145">145 cm</option>
+<option value="146">146 cm</option>
+<option value="147">147 cm</option>
+<option value="148">148 cm</option>
+<option value="149">149 cm</option>
+<option value="150">150 cm</option>
+<option value="151">151 cm</option>
+<option value="152">152 cm</option>
+<option value="153">153 cm</option>
+<option value="154">154 cm</option>
+<option value="155">155 cm</option>
+<option value="156">156 cm</option>
+<option value="157">157 cm</option>
+<option value="158">158 cm</option>
+<option value="159">159 cm</option>
+<option value="160">160 cm</option>
+<option value="161">161 cm</option>
+<option value="162">162 cm</option>
+<option value="163">163 cm</option>
+<option value="164">164 cm</option>
+<option value="165">165 cm</option>
+<option value="166">166 cm</option>
+<option value="167">167 cm</option>
+<option value="168">168 cm</option>
+<option value="169">169 cm</option>
+<option value="170">170 cm</option>
+<option value="171">171 cm</option>
+<option value="172">172 cm</option>
+<option value="173">173 cm</option>
+<option value="174">174 cm</option>
+<option value="175">175 cm</option>
+<option value="176">176 cm</option>
+<option value="177">177 cm</option>
+<option value="178">178 cm</option>
+<option value="179">179 cm</option>
+<option value="180">180 cm</option>
+<option value="181">181 cm</option>
+<option value="182">182 cm</option>
+<option value="183">183 cm</option>
+<option value="184">184 cm</option>
+<option value="185">185 cm</option>
+<option value="186">186 cm</option>
+<option value="187">187 cm</option>
+<option value="188">188 cm</option>
+<option value="189">189 cm</option>
+<option value="190">190 cm</option>
+<option value="191">191 cm</option>
+<option value="192">192 cm</option>
+<option value="193">193 cm</option>
+<option value="194">194 cm</option>
+<option value="195">195 cm</option>
+<option value="196">196 cm</option>
+<option value="197">197 cm</option>
+<option value="198">198 cm</option>
+<option value="199">199 cm</option>
+<option value="200">200 cm</option>
+<option value="201">201 cm</option>
+<option value="202">202 cm</option>
+<option value="203">203 cm</option>
+<option value="204">204 cm</option>
+<option value="205">205 cm</option>
+<option value="206">206 cm</option>
+<option value="207">207 cm</option>
+<option value="208">208 cm</option>
+<option value="209">209 cm</option>
+<option value="210">210 cm</option>
+<option value="211">211 cm</option>
+<option value="212">212 cm</option>
+<option value="213">213 cm</option>
+<option value="214">214 cm</option>
+<option value="215">215 cm</option>
+<option value="216">216 cm</option>
+<option value="217">217 cm</option>
+<option value="218">218 cm</option>
+<option value="219">219 cm</option>
+<option value="220">220 cm</option>
+  </select>
 
   <button type="submit">Spara profil</button>
   <p id="predicted-pef-display"><strong>Förväntat PEF:</strong> -- L/min</p>
 </form>
 
-<h3>Ny mätning</h3>
-<label for="pef">PEF-värde (L/min):</label>
-<input type="number" id="pef" required min="0">
-<button onclick="jämförPEF()">Jämför och spara</button>
-<button onclick="exportCSV()">Exportera till CSV</button>
-<button onclick="clearHistory()">Rensa historik</button>
+<h3>PEF-mätning</h3>
+<input type="number" id="pef" placeholder="Ange PEF-värde (L/min)" min="0">
+<button onclick="sparaPEF()">Spara PEF-värde</button>
+<p id="result-feedback"></p>
 
-<h3>Logg</h3>
+<h3>Mätläge</h3>
+<button onclick="startMeasurementPeriod()">Starta mätperiod (14 dagar)</button>
+<button onclick="endMeasurementPeriod()">Avsluta mätperiod</button>
+<p id="period-info">Ingen mätperiod aktiv</p>
+<div id="instructions" style="display:none;">
+  <ul>
+    <li>Mät <strong>morgon och kväll</strong></li>
+    <li>Gör <strong>tre blås</strong> varje gång</li>
+    <li>Mata in <strong>bästa värdet</strong> manuellt</li>
+  </ul>
+</div>
+
+<h3>Graf och sammanfattning</h3>
 <canvas id="pefChart"></canvas>
-
-<h4>Filtrera visning</h4>
-<select id="filter-type" onchange="updateChart()">
-  <option value="all">Visa alla</option>
-  <option value="period">Endast mätperiod</option>
-  <option value="kontroll">Endast kontrollmätningar</option>
-</select>
 
 <div id="summary-box">
   <h4>Sammanfattning</h4>
   <p id="summary-stats">Ingen data att visa</p>
 </div>
 
+<button onclick="exportCSV()">Exportera till CSV</button>
+<button onclick="clearHistory()">Rensa historik</button>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let predictedPEF = null;
-let pefHistory = JSON.parse(localStorage.getItem('pefHistory') || "[]");
+let pefHistory = JSON.parse(localStorage.getItem("pefHistory") || "[]");
+
+function calculatePredictedPEF(age, sex, height) {
+  if (sex === "male") {
+    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
+  } else if (sex === "female") {
+    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
+  }
+}
 
 function updatePredictedDisplay() {
-  document.getElementById('predicted-pef-display').innerHTML =
-    "<strong>Förväntat PEF:</strong> " + predictedPEF + " L/min";
+  document.getElementById("predicted-pef-display").innerHTML =
+    "<strong>Förväntat PEF:</strong> " + (predictedPEF || "--") + " L/min";
 }
+
+document.getElementById("profile-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const age = parseInt(document.getElementById("age").value);
+  const sex = document.getElementById("sex").value;
+  const height = parseInt(document.getElementById("height").value);
+
+  if (!age || !sex || !height) {
+    alert("Fyll i hela profilen.");
+    return;
+  }
+
+  const profile = { age, sex, height };
+  localStorage.setItem("pefProfile", JSON.stringify(profile));
+  calculatePredictedPEF(age, sex, height);
+  updatePredictedDisplay();
+  alert("Profil sparad!");
+});
 
 function startMeasurementPeriod() {
   const start = new Date();
-  localStorage.setItem('measurementStart', start.toISOString());
+  localStorage.setItem("measurementStart", start.toISOString());
   const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
-  document.getElementById('period-info').innerText =
-    'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
-  document.getElementById('instructions').style.display = 'block';
+  document.getElementById("period-info").innerText =
+    "Mätperiod aktiv: " + start.toLocaleDateString() + " – " + end.toLocaleDateString();
+  document.getElementById("instructions").style.display = "block";
 }
 
 function endMeasurementPeriod() {
-  localStorage.removeItem('measurementStart');
-  document.getElementById('period-info').innerText = 'Ingen mätperiod aktiv';
-  document.getElementById('instructions').style.display = 'none';
+  localStorage.removeItem("measurementStart");
+  document.getElementById("period-info").innerText = "Ingen mätperiod aktiv";
+  document.getElementById("instructions").style.display = "none";
 }
 
 function isInMeasurementPeriod(date) {
-  const startStr = localStorage.getItem('measurementStart');
+  const startStr = localStorage.getItem("measurementStart");
   if (!startStr) return false;
   const start = new Date(startStr);
   const end = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
   return date >= start && date <= end;
 }
 
-function calculatePredictedPEF(age, sex, height) {
-  if (sex === 'male') {
-    predictedPEF = Math.round((5.48 * height) - (0.041 * age) - 5.48);
-  } else if (sex === 'female') {
-    predictedPEF = Math.round((3.72 * height) - (0.03 * age) + 0.54);
-  }
-}
-
-document.getElementById('profile-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-  e.preventDefault();
-  const age = parseInt(document.getElementById('age').value);
-  const sex = document.getElementById('sex').value;
-  const height = parseInt(document.getElementById('height').value);
-  const profile = { age, sex, height };
-  localStorage.setItem('pefProfile', JSON.stringify(profile));
-  calculatePredictedPEF(age, sex, height);
-  updatePredictedDisplay();
-  alert('Profil sparad! Förväntat PEF: ' + predictedPEF + ' L/min');
-});
-
-function jämförPEF() {
-  const input = document.getElementById('pef');
-  const measuredPEF = parseInt(input.value);
-  if (isNaN(measuredPEF) || !predictedPEF) {
-    alert('Fyll i ett giltigt PEF och profil först.');
+function sparaPEF() {
+  const value = parseInt(document.getElementById("pef").value);
+  if (!value || !predictedPEF) {
+    alert("Fyll i PEF-värde och profil.");
     return;
   }
-
-  const percent = Math.round((measuredPEF / predictedPEF) * 100);
-  alert('Din PEF är ' + measuredPEF + ' L/min (' + percent + '% av förväntat)');
 
   const now = new Date();
   const time = now.toLocaleString();
-  const isPeriod = isInMeasurementPeriod(now);
-  pefHistory.push({ value: measuredPEF, time: time, typ: isPeriod ? "period" : "kontroll" });
-  localStorage.setItem('pefHistory', JSON.stringify(pefHistory));
+  const typ = isInMeasurementPeriod(now) ? "period" : "kontroll";
+  pefHistory.push({ value, time, typ });
+  localStorage.setItem("pefHistory", JSON.stringify(pefHistory));
+
+  const percent = Math.round((value / predictedPEF) * 100);
+  document.getElementById("result-feedback").innerText =
+    `${value} L/min (${percent}% av förväntat) – ${typ}`;
+
   updateChart();
 }
 
-
-function kontrollmatning() {
-  const input = document.getElementById('pef');
-  const measuredPEF = parseInt(input.value);
-  if (!measuredPEF || !predictedPEF) {
-    alert('Fyll i profil och PEF-värde först!');
-    return;
-  }
-
-  const percent = Math.round((measuredPEF / predictedPEF) * 100);
-  document.getElementById('kontroll-resultat').innerText =
-    'Kontroll: ' + measuredPEF + ' L/min (' + percent + '% av förväntat)';
-}
-
 function updateChart() {
-  const ctx = document.getElementById('pefChart').getContext('2d');
-  const filter = document.getElementById('filter-type')?.value || 'all';
-
-  let filtered = [...pefHistory];
-  if (filter !== 'all') filtered = pefHistory.filter(d => d.typ === filter);
-
-  const labels = filtered.map(d => d.time);
-  const data = filtered.map(d => d.value);
-  const periodValues = pefHistory.filter(d => d.typ === "period").map(d => d.value);
-  const avg = periodValues.length > 0
-    ? periodValues.reduce((sum, v) => sum + v, 0) / periodValues.length
+  const ctx = document.getElementById("pefChart").getContext("2d");
+  const labels = pefHistory.map(d => d.time);
+  const data = pefHistory.map(d => d.value);
+  const avg = pefHistory.length > 0
+    ? pefHistory.reduce((sum, d) => sum + d.value, 0) / pefHistory.length
     : null;
   const avgLine = avg ? new Array(data.length).fill(avg) : [];
 
   if (window.myChart) window.myChart.destroy();
   window.myChart = new Chart(ctx, {
-    type: 'line',
+    type: "line",
     data: {
       labels: labels,
       datasets: [
         {
-          label: 'PEF-värden',
+          label: "PEF-värde",
           data: data,
-          borderColor: '#0077cc',
-          backgroundColor: '#0077cc',
-          tension: 0.2,
-          borderWidth: 2
+          borderColor: "#0077cc",
+          tension: 0.2
         },
         avg ? {
-          label: 'Medelvärde (mätperiod)',
+          label: "Medelvärde",
           data: avgLine,
-          borderColor: 'green',
+          borderColor: "green",
           borderDash: [5, 5],
           fill: false,
-          pointRadius: 0,
-          tension: 0.2
+          pointRadius: 0
         } : null
       ].filter(Boolean)
     },
     options: {
-      scales: {
-        y: {
-          beginAtZero: false
-        }
-      }
+      responsive: true,
+      scales: { y: { beginAtZero: false } }
     }
   });
 
@@ -220,88 +409,55 @@ function updateChart() {
     const min = Math.min(...data);
     const max = Math.max(...data);
     const mean = Math.round(data.reduce((a, b) => a + b, 0) / data.length);
-    document.getElementById('summary-stats').innerText =
-      `Antal mätningar: ${data.length}, Min: ${min}, Max: ${max}, Medel: ${mean}`;
+    document.getElementById("summary-stats").innerText =
+      `Antal: ${data.length}, Min: ${min}, Max: ${max}, Medel: ${mean}`;
   } else {
-    document.getElementById('summary-stats').innerText = 'Ingen data att visa';
+    document.getElementById("summary-stats").innerText = "Ingen data att visa";
   }
 }
 
 function clearHistory() {
-  if (confirm("Vill du verkligen radera all PEF-historik?")) {
-    localStorage.removeItem('pefHistory');
+  if (confirm("Rensa all data?")) {
+    localStorage.removeItem("pefHistory");
     pefHistory = [];
     updateChart();
   }
 }
 
 function exportCSV() {
-  let csv = "Tid,PEF
-";
+  if (pefHistory.length === 0) return alert("Ingen data.");
+  let csv = "Tid,PEF,Typ\n";
   pefHistory.forEach(item => {
-    csv += `${item.time},${item.value}
-`;
+    csv += `${item.time},${item.value},${item.typ}\n`;
   });
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = 'pef_history.csv';
+  a.download = "pef_logg.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 
-
-window.addEventListener('load', () => {
-  // Ladda sparad profil om den finns
-  const storedProfile = localStorage.getItem('pefProfile');
-  if (storedProfile) {
-    try {
-      const profile = JSON.parse(storedProfile);
-      if (profile.age && profile.sex && profile.height) {
-        document.getElementById('age').value = profile.age;
-        document.getElementById('sex').value = profile.sex;
-        document.getElementById('height').value = profile.height;
-        calculatePredictedPEF(profile.age, profile.sex, profile.height);
-        updatePredictedDisplay();
-      }
-    } catch (e) {
-      console.error('Kunde inte tolka sparad profil:', e);
-    }
+window.addEventListener("load", () => {
+  const profile = JSON.parse(localStorage.getItem("pefProfile"));
+  if (profile) {
+    document.getElementById("age").value = profile.age;
+    document.getElementById("sex").value = profile.sex;
+    document.getElementById("height").value = profile.height;
+    calculatePredictedPEF(profile.age, profile.sex, profile.height);
+    updatePredictedDisplay();
   }
-
-  // Visa eventuell aktiv mätperiod
-  const startStr = localStorage.getItem('measurementStart');
+  const startStr = localStorage.getItem("measurementStart");
   if (startStr) {
     const start = new Date(startStr);
     const end = new Date(start.getTime() + 13 * 24 * 60 * 60 * 1000);
-    document.getElementById('period-info').innerText =
-      'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
-    document.getElementById('instructions').style.display = 'block';
+    document.getElementById("period-info").innerText =
+      "Mätperiod aktiv: " + start.toLocaleDateString() + " – " + end.toLocaleDateString();
+    document.getElementById("instructions").style.display = "block";
   }
-
   updateChart();
 });
-
-// Robust profil-formhantering
-document.getElementById('profile-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const age = parseInt(document.getElementById('age').value);
-  const sex = document.getElementById('sex').value;
-  const height = parseInt(document.getElementById('height').value);
-
-  if (!age || !sex || !height) {
-    alert("Fyll i alla fält korrekt.");
-    return;
-  }
-
-  const profile = { age, sex, height };
-  localStorage.setItem('pefProfile', JSON.stringify(profile));
-  calculatePredictedPEF(age, sex, height);
-  updatePredictedDisplay();
-  alert('Profil sparad! Förväntat PEF: ' + predictedPEF + ' L/min');
-});
-
 </script>
 </body>
 </html>
