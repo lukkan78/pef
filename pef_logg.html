@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>PEF-logg</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="ikon512.png">
+  <meta name="theme-color" content="#ffffff">
+  <style>
+    body { font-family: sans-serif; padding: 1em; background: #f5f5f5; }
+    h1, h2 { text-align: center; }
+    input, button { padding: 0.5em; margin: 0.5em 0; width: 100%; font-size: 1em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; background: #fff; }
+    canvas { max-width: 100%; margin-top: 2em; }
+    #logg { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>PEF-logg</h1>
+
+  <form id="pefForm">
+    <label for="pef">PEF-värde (L/min):</label>
+    <input type="number" id="pef" required min="0">
+    <button type="submit">Spara värde</button>
+  </form>
+
+  <button onclick="exportCSV()">Exportera till CSV</button>
+  <button onclick="clearLog()">Rensa logg</button>
+
+  <div id="logg">
+    <h2>Loggade värden</h2>
+    <table id="loggTabell">
+      <thead><tr><th>Datum</th><th>Tid</th><th>PEF</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <canvas id="pefChart"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const form = document.getElementById("pefForm");
+    const tableBody = document.querySelector("#loggTabell tbody");
+    const ctx = document.getElementById("pefChart").getContext("2d");
+    let chart;
+
+    function loadLog() {
+      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
+      tableBody.innerHTML = "";
+      const labels = [];
+      const data = [];
+
+      log.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${entry.date}</td><td>${entry.time}</td><td>${entry.pef}</td>`;
+        tableBody.appendChild(row);
+        labels.push(`${entry.date} ${entry.time}`);
+        data.push(Number(entry.pef));
+      });
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'PEF (L/min)',
+            data: data,
+            fill: false,
+            borderColor: 'blue',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const pef = document.getElementById("pef").value;
+      const now = new Date();
+      const entry = {
+        date: now.toLocaleDateString("sv-SE"),
+        time: now.toLocaleTimeString("sv-SE", {hour: "2-digit", minute: "2-digit"}),
+        pef: pef
+      };
+      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
+      log.push(entry);
+      localStorage.setItem("pefLogg", JSON.stringify(log));
+      document.getElementById("pef").value = "";
+      loadLog();
+    });
+
+    function exportCSV() {
+      const log = JSON.parse(localStorage.getItem("pefLogg") || "[]");
+      if (log.length === 0) return alert("Inga värden att exportera.");
+      const csv = "Datum,Tid,PEF\n" + log.map(e => `${e.date},${e.time},${e.pef}`).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "pef_logg.csv";
+      a.click();
+    }
+
+    function clearLog() {
+      if (confirm("Är du säker på att du vill rensa loggen?")) {
+        localStorage.removeItem("pefLogg");
+        loadLog();
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+
+    loadLog();
+  </script>
+</body>
+</html>
