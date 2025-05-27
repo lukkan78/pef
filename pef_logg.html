@@ -293,6 +293,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
+
+
+
 <script>
 document.getElementById("profile-form").addEventListener("submit", function(e) {
   e.preventDefault();
@@ -306,11 +309,11 @@ document.getElementById("profile-form").addEventListener("submit", function(e) {
   // Spara profildata
   localStorage.setItem("pefProfile", JSON.stringify(profile));
 
-  // Räkna och uppdatera
-  predictedPEF = calculatePredictedPEF(profile.age, profile.sex, profile.height);
-  updatePredictedDisplay();
+  // Beräkna och visa direkt
+  const predicted = calculatePredictedPEF(profile.age, profile.sex, profile.height);
+  document.getElementById("predicted-pef-display").innerText = predicted + " L/min";
 
-  alert("Profilen har sparats och PEF har uppdaterats.");
+  alert("Profilen har sparats!");
 });
 </script>
 
