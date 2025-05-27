@@ -259,6 +259,7 @@
 
   <button type="submit">Spara profil</button>
   <p id="predicted-pef-display"><strong>Förväntat PEF:</strong> -- L/min</p>
+<button type="submit">Spara profil</button>
 </form>
 
 <h3>PEF-mätning</h3>
@@ -461,5 +462,27 @@ window.addEventListener("load", () => {
   updateChart();
 });
 </script>
+
+<script>
+document.getElementById("profile-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const profile = {
+    age: document.getElementById("age").value,
+    sex: document.getElementById("sex").value,
+    height: document.getElementById("height").value
+  };
+
+  // Rensar gammal profildata och sparar ny
+  localStorage.removeItem("pefProfile");
+  localStorage.setItem("pefProfile", JSON.stringify(profile));
+
+  calculatePredictedPEF(profile.age, profile.sex, profile.height);
+  updatePredictedDisplay();
+
+  alert("Profilen har sparats!");
+});
+</script>
+
 </body>
 </html>
