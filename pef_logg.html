@@ -325,7 +325,9 @@ document.getElementById("profile-form").addEventListener("submit", function (e) 
   calculatePredictedPEF(age, sex, height);
   updatePredictedDisplay();
     updateProfileDisplay(profile);
+  }
   updateProfileDisplay(profile);
+  }
   alert("Profil sparad!");
 });
 
@@ -467,7 +469,9 @@ function exportCSV() {
 }
 
 window.addEventListener("load", () => {
-  const profile = JSON.parse(localStorage.getItem("pefProfile"));
+  const profileStr = localStorage.getItem("pefProfile");
+  if (profileStr) {
+    const profile = JSON.parse(profileStr);
   if (profile) {
     document.getElementById("age").value = profile.age;
     document.getElementById("sex").value = profile.sex;
@@ -475,6 +479,7 @@ window.addEventListener("load", () => {
     calculatePredictedPEF(profile.age, profile.sex, profile.height);
     updatePredictedDisplay();
     updateProfileDisplay(profile);
+  }
   }
   const startStr = localStorage.getItem("measurementStart");
   if (startStr) {
