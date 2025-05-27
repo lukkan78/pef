@@ -1,0 +1,8 @@
+{
+    "name": "PEF Logg",
+    "short_name": "PEF Logg",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2196F3"
+}
