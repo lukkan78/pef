@@ -324,6 +324,8 @@ document.getElementById("profile-form").addEventListener("submit", function (e) 
   localStorage.setItem("pefProfile", JSON.stringify(profile));
   calculatePredictedPEF(age, sex, height);
   updatePredictedDisplay();
+    updateProfileDisplay(profile);
+  updateProfileDisplay(profile);
   alert("Profil sparad!");
 });
 
@@ -418,7 +420,30 @@ function updateChart() {
   }
 }
 
+
 function clearHistory() {
+  if (confirm("Rensa all data och profil?")) {
+    localStorage.removeItem("pefHistory");
+    localStorage.removeItem("pefProfile");
+    localStorage.removeItem("measurementStart");
+    pefHistory = [];
+    predictedPEF = null;
+    document.getElementById("predicted-pef-display").innerText = "Förväntat PEF: -- L/min";
+    document.getElementById("current-profile").innerText = "";
+    document.getElementById("age").value = "";
+    document.getElementById("sex").value = "";
+    document.getElementById("height").value = "";
+    document.getElementById("period-info").innerText = "Ingen mätperiod aktiv";
+    document.getElementById("instructions").style.display = "none";
+    updateChart();
+  }
+}
+
+function updateProfileDisplay(profile) {
+  const text = "Profil: " + (profile.sex === "male" ? "Man" : "Kvinna") + ", " + profile.age + " år, " + profile.height + " cm (Nunn & Gregg 1989)";
+  document.getElementById("current-profile").innerText = text;
+}
+
   if (confirm("Rensa all data?")) {
     localStorage.removeItem("pefHistory");
     pefHistory = [];
@@ -449,6 +474,7 @@ window.addEventListener("load", () => {
     document.getElementById("height").value = profile.height;
     calculatePredictedPEF(profile.age, profile.sex, profile.height);
     updatePredictedDisplay();
+    updateProfileDisplay(profile);
   }
   const startStr = localStorage.getItem("measurementStart");
   if (startStr) {
