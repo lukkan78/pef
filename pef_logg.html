@@ -468,19 +468,23 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+
 window.addEventListener("load", () => {
   const profileStr = localStorage.getItem("pefProfile");
   if (profileStr) {
-    const profile = JSON.parse(profileStr);
-  if (profile) {
-    document.getElementById("age").value = profile.age;
-    document.getElementById("sex").value = profile.sex;
-    document.getElementById("height").value = profile.height;
-    calculatePredictedPEF(profile.age, profile.sex, profile.height);
-    updatePredictedDisplay();
-    updateProfileDisplay(profile);
+    try {
+      const profile = JSON.parse(profileStr);
+      document.getElementById("age").value = profile.age;
+      document.getElementById("sex").value = profile.sex;
+      document.getElementById("height").value = profile.height;
+      calculatePredictedPEF(profile.age, profile.sex, profile.height);
+      updatePredictedDisplay();
+      updateProfileDisplay(profile);
+    } catch (e) {
+      console.warn("Fel vid laddning av profil:", e);
+    }
   }
-  }
+
   const startStr = localStorage.getItem("measurementStart");
   if (startStr) {
     const start = new Date(startStr);
@@ -489,8 +493,10 @@ window.addEventListener("load", () => {
       "Mätperiod aktiv: " + start.toLocaleDateString() + " – " + end.toLocaleDateString();
     document.getElementById("instructions").style.display = "block";
   }
+
   updateChart();
 });
+
 </script>
 </body>
 </html>
