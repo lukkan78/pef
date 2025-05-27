@@ -22,6 +22,10 @@
 
 <h1>PEF-logg</h1>
 
+<button onclick="kontrollmatning()" style="background:#0077cc;color:white;font-weight:bold;">Gör en kontrollmätning</button>
+<p id="kontroll-resultat"></p>
+
+
 <h3>Mätläge</h3>
 <button onclick="startMeasurementPeriod()">Starta mätperiod (14 dagar)</button>
 <button onclick="endMeasurementPeriod()">Avsluta mätperiod</button>
@@ -119,6 +123,7 @@ function calculatePredictedPEF(age, sex, height) {
 
 document.getElementById('profile-form').addEventListener('submit', function (e) {
   e.preventDefault();
+  e.preventDefault();
   const age = parseInt(document.getElementById('age').value);
   const sex = document.getElementById('sex').value;
   const height = parseInt(document.getElementById('height').value);
@@ -146,6 +151,20 @@ function jämförPEF() {
   pefHistory.push({ value: measuredPEF, time: time, typ: isPeriod ? "period" : "kontroll" });
   localStorage.setItem('pefHistory', JSON.stringify(pefHistory));
   updateChart();
+}
+
+
+function kontrollmatning() {
+  const input = document.getElementById('pef');
+  const measuredPEF = parseInt(input.value);
+  if (!measuredPEF || !predictedPEF) {
+    alert('Fyll i profil och PEF-värde först!');
+    return;
+  }
+
+  const percent = Math.round((measuredPEF / predictedPEF) * 100);
+  document.getElementById('kontroll-resultat').innerText =
+    'Kontroll: ' + measuredPEF + ' L/min (' + percent + '% av förväntat)';
 }
 
 function updateChart() {
@@ -232,15 +251,26 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+
 window.addEventListener('load', () => {
-  const profile = JSON.parse(localStorage.getItem('pefProfile'));
-  if (profile) {
-    document.getElementById('age').value = profile.age;
-    document.getElementById('sex').value = profile.sex;
-    document.getElementById('height').value = profile.height;
-    calculatePredictedPEF(profile.age, profile.sex, profile.height);
-    updatePredictedDisplay();
+  // Ladda sparad profil om den finns
+  const storedProfile = localStorage.getItem('pefProfile');
+  if (storedProfile) {
+    try {
+      const profile = JSON.parse(storedProfile);
+      if (profile.age && profile.sex && profile.height) {
+        document.getElementById('age').value = profile.age;
+        document.getElementById('sex').value = profile.sex;
+        document.getElementById('height').value = profile.height;
+        calculatePredictedPEF(profile.age, profile.sex, profile.height);
+        updatePredictedDisplay();
+      }
+    } catch (e) {
+      console.error('Kunde inte tolka sparad profil:', e);
+    }
   }
+
+  // Visa eventuell aktiv mätperiod
   const startStr = localStorage.getItem('measurementStart');
   if (startStr) {
     const start = new Date(startStr);
@@ -249,8 +279,29 @@ window.addEventListener('load', () => {
       'Mätperiod aktiv: ' + start.toLocaleDateString() + ' – ' + end.toLocaleDateString();
     document.getElementById('instructions').style.display = 'block';
   }
+
   updateChart();
 });
+
+// Robust profil-formhantering
+document.getElementById('profile-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const age = parseInt(document.getElementById('age').value);
+  const sex = document.getElementById('sex').value;
+  const height = parseInt(document.getElementById('height').value);
+
+  if (!age || !sex || !height) {
+    alert("Fyll i alla fält korrekt.");
+    return;
+  }
+
+  const profile = { age, sex, height };
+  localStorage.setItem('pefProfile', JSON.stringify(profile));
+  calculatePredictedPEF(age, sex, height);
+  updatePredictedDisplay();
+  alert('Profil sparad! Förväntat PEF: ' + predictedPEF + ' L/min');
+});
+
 </script>
 </body>
 </html>
