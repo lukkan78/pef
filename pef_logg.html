@@ -2,6 +2,630 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    ...
-    <!-- truncated for brevity -->
-</html>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEF Logg - Lungfunktionsmätning</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUEVGIExvZ2ciLCJzaG9ydF9uYW1lIjoiUEVGIExvZ2ciLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMyMTk2RjMiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRJNElpQm9aV2xuYUhROUlqRXlPQ0lpSUhacFpYZENiM2c5SWpBZ01DQXhNamd1TXpZZ01USTRJaUJtYVd4c1BTSmpiR0Z6Y3lJZ2VHMXNibk05SW1oMGRIQTZMeTkzZDNjdWR6TXViM0puTHpJd01EQXZjM1puSWo0OFp5QmpiR0Z6Y3owaVlTSStQSEJoZEdnZ1pEMGlUVGN1TnpFc01UQXVNeUIyYUMwaWVtMXpJSE5wZEhWaGRHbHZiajF6Y21OZ1JHRjBZVDFwYldGblpTOXpkbWMrZUcxc08ySmhjMlUyTkN4cFZrSlBVbGQwUVdkVlFtaE9WRkY0VWsxa2VVNXVaRmhoVnpWcVRETkNkMDVYTmxKSlJqbDJZbTV3Vm1Gck9UTktNaUJUV1hjelZ6WktkMVpHU0hkcFQwaFRiRGhOUXpWT1JHZDBWa1kzVVZOUFUwZG5hVzFiWkZGWWNVUTNhVzVNVnpGRlVIRkRXVEpJUTJ0VFdGTnZOazk0VGxSbU4xSkNVakUzV1U5SFZtZFNVbU5rUWpkcVEzRnZVR2d6VG01RVEzaERaR3gzV2t4dVNWRTNORGNyUTNsVFR5OW5Sa3BEWTA5eWRHRlJhMWREY0RZelNGWnNabFpaUW10TVRXVjZOV1F5VDI1a1VqWnZUa3h6Y2psTVNXcGthekpTVmxSVVptZGhSVkJUUlRKeWFVMDBObTlqZW0xdE4wUjZkVlYwUVhaRVMxUldVV1pTTmxkUFRGaE5ZMGhsWjFSclptNXpNVkEwTlhoU2JUTXJNRlUwUVVsamJuQmhNVzlxU1RoQ1dXa3ZXSHByUm0xS2VYcGhhVE13UlVsc1dXSnVURUU0UTJoV1dsQXJjMGhMVFVGUlMxZG5UMUZzSzNSTWMzZzVablZVYzFGUU5scE9OVlE0T1dNMEsxZGhOek5UVVVneWJWaGFTMGhXYWt0alR6TnhRMU5xT1ZNdmRHUmlRMUUyTUROSmJDOTFVa1ZvVGtsQ1YyaE5NRTFPVUVsSGJrUlFRVXh6V2t0dlpIZGlPWGszTlVoUE9XUk1NMFpsUjFNNFMzRXhlazF4VlRFeFpYSm9ZV0Y0TjNFellrUnNNVk53WkhZeWRqTkROalpDU2psaWJWRm5hMEZ1WlRGdGJIWXlObGMwT1UweEwzVm1XM1JhV2sxdWNHWkdUVXBGUWxkNlYzZDJiRVY0TkVOTVkxbFRibEJIVjNsNmNWWlhka1ZhVURGQ01XaFFSVzk0VTFRK0lpc2dablZzYkQwaWEyWm1abVptSWlCemRISnZhMlU5SXlNek0yTXpNek1pSUhOMGNtOXJaUzEzYVdSMGFEMGlNUzQxSWk4K1BDOW5QanhwYldGblpTQjNhV1IwYUQwaU5EWWlJR2hsYVdkb2REMGlORFlpSUhOeVl6MGlhSFIwY0hNNkx5OWpaRzVxY3k1amJHOTFaR1pzWVhKbExtTnZiUzl6ZG1kcGMzWmtYMWx6SWs5VVZqZzNYazVSUlZSeVYwc3hPRVZqVGpZaUlDOCtQQzl6ZG1jK0lpd2ljMmw2WlhNaU9pSWlORFlnTkRZaVh5d2lkSGx3WlNJNklpbHRZV2RsSWl3aWNIVnljRzl6WlhNaU9sc2lZVzUySUdScGMzQnNZWGtpWFgxZCJ9XX0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2196F3;
+            border-bottom: 3px solid #2196F3;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .measurement-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pef-display {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .pef-value {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .pef-unit {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .pef-status {
+            margin-top: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-excellent { background: rgba(255,255,255,0.2); }
+        .status-good { background: rgba(255,235,59,0.8); color: #333; }
+        .status-fair { background: rgba(255,152,0,0.8); color: white; }
+        .status-poor { background: rgba(244,67,54,0.8); color: white; }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .history-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .profile-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .normal-values {
+            background: #f1f8e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PEF Logg</h1>
+            <div class="subtitle">Peak Expiratory Flow Mätning</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('measure')">📊 Mät</button>
+            <button class="tab" onclick="showTab('profile')">👤 Profil</button>
+            <button class="tab" onclick="showTab('history')">📈 Historik</button>
+            <button class="tab" onclick="showTab('info')">ℹ️ Info</button>
+        </div>
+
+        <div id="measure" class="tab-content active">
+            <div class="measurement-section">
+                <h2>Ny PEF-mätning</h2>
+                <div class="pef-display" id="pefDisplay">
+                    <div class="pef-value" id="pefValue">--</div>
+                    <div class="pef-unit">L/min</div>
+                    <div class="pef-status" id="pefStatus"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="pefInput">Ange PEF-värde (L/min):</label>
+                    <input type="number" id="pefInput" placeholder="300-700" min="100" max="900">
+                </div>
+                
+                <button class="btn" onclick="addMeasurement()">Spara mätning</button>
+                <div id="measureMessage"></div>
+            </div>
+        </div>
+
+        <div id="profile" class="tab-content">
+            <h2>Personlig profil</h2>
+            <div class="input-group">
+                <label for="nameInput">Namn:</label>
+                <input type="text" id="nameInput" placeholder="Ditt namn">
+            </div>
+            
+            <div class="input-group">
+                <label for="ageInput">Ålder:</label>
+                <input type="number" id="ageInput" placeholder="25" min="5" max="120">
+            </div>
+            
+            <div class="input-group">
+                <label for="genderInput">Kön:</label>
+                <select id="genderInput">
+                    <option value="">Välj kön</option>
+                    <option value="man">Man</option>
+                    <option value="kvinna">Kvinna</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="heightInput">Längd (cm):</label>
+                <input type="number" id="heightInput" placeholder="170" min="100" max="250">
+            </div>
+            
+            <button class="btn" onclick="saveProfile()">Spara profil</button>
+            <div id="profileMessage"></div>
+            
+            <div id="profileInfo" class="profile-info" style="display: none;">
+                <h3>Din profil</h3>
+                <div id="profileDisplay"></div>
+            </div>
+            
+            <div id="normalValues" class="normal-values" style="display: none;">
+                <h3>Dina förväntade normalvärden</h3>
+                <div id="normalValuesDisplay"></div>
+            </div>
+        </div>
+
+        <div id="history" class="tab-content">
+            <h2>Mäthistorik</h2>
+            <div class="chart-container">
+                <canvas id="historyChart"></canvas>
+            </div>
+            <div id="historyList"></div>
+            <button class="btn" onclick="clearHistory()" style="background: #f44336;">Rensa historik</button>
+        </div>
+
+        <div id="info" class="tab-content">
+            <h2>Om PEF-mätning</h2>
+            <p><strong>Peak Expiratory Flow (PEF)</strong> mäter den högsta hastigheten du kan blåsa ut luft från lungorna.</p>
+            
+            <h3>Normalvärden (ungefärliga):</h3>
+            <ul>
+                <li><strong>Vuxna män:</strong> 400-700 L/min</li>
+                <li><strong>Vuxna kvinnor:</strong> 300-500 L/min</li>
+                <li><strong>Barn:</strong> Varierar med ålder och längd</li>
+            </ul>
+            
+            <h3>Färgkodning:</h3>
+            <ul>
+                <li><span style="color: #4CAF50;">🟢 Utmärkt:</span> >80% av förväntat värde</li>
+                <li><span style="color: #FFC107;">🟡 Bra:</span> 60-80% av förväntat värde</li>
+                <li><span style="color: #FF9800;">🟠 Måttligt:</span> 40-60% av förväntat värde</li>
+                <li><span style="color: #F44336;">🔴 Dåligt:</span> <40% av förväntat värde</li>
+            </ul>
+            
+            <h3>Tips för mätning:</h3>
+            <ul>
+                <li>Stå eller sitt upprätt</li>
+                <li>Ta ett djupt andetag</li>
+                <li>Blås ut så hårt och snabbt som möjligt</li>
+                <li>Gör 3 försök och ta det bästa värdet</li>
+            </ul>
+            
+            <p><em>Denna app ersätter inte medicinsk rådgivning. Konsultera alltid din läkare för professionell bedömning.</em></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        let measurements = [];
+        let profile = {};
+        let chart = null;
+
+        // Ladda data vid start
+        window.onload = function() {
+            loadData();
+            updateDisplay();
+            updateHistoryDisplay();
+            loadProfile();
+        };
+
+        function showTab(tabName) {
+            // Dölj alla flikar
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Visa vald flik
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Uppdatera graf om historik-fliken visas
+            if (tabName === 'history') {
+                setTimeout(updateChart, 100);
+            }
+        }
+
+        function addMeasurement() {
+            const pefValue = parseInt(document.getElementById('pefInput').value);
+            const messageDiv = document.getElementById('measureMessage');
+            
+            // Validering
+            if (!pefValue || pefValue < 100 || pefValue > 900) {
+                showMessage(messageDiv, 'Ange ett giltigt PEF-värde mellan 100-900 L/min', 'error');
+                return;
+            }
+            
+            const measurement = {
+                value: pefValue,
+                date: new Date().toISOString(),
+                timestamp: Date.now()
+            };
+            
+            measurements.unshift(measurement);
+            saveData();
+            updateDisplay();
+            updateHistoryDisplay();
+            
+            // Rensa input
+            document.getElementById('pefInput').value = '';
+            
+            showMessage(messageDiv, 'Mätning sparad!', 'success');
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('nameInput').value.trim();
+            const age = parseInt(document.getElementById('ageInput').value);
+            const gender = document.getElementById('genderInput').value;
+            const height = parseInt(document.getElementById('heightInput').value);
+            const messageDiv = document.getElementById('profileMessage');
+            
+            // Validering
+            if (!name) {
+                showMessage(messageDiv, 'Ange ditt namn', 'error');
+                return;
+            }
+            
+            if (!age || age < 5 || age > 120) {
+                showMessage(messageDiv, 'Ange en giltig ålder (5-120 år)', 'error');
+                return;
+            }
+            
+            if (!gender) {
+                showMessage(messageDiv, 'Välj kön', 'error');
+                return;
+            }
+            
+            if (!height || height < 100 || height > 250) {
+                showMessage(messageDiv, 'Ange en giltig längd (100-250 cm)', 'error');
+                return;
+            }
+            
+            profile = { name, age, gender, height };
+            
+            // Spara till localStorage
+            try {
+                const data = JSON.parse(localStorage.getItem('pefData') || '{}');
+                data.profile = profile;
+                localStorage.setItem('pefData', JSON.stringify(data));
+                
+                showMessage(messageDiv, 'Profil sparad!', 'success');
+                displayProfile();
+                calculateNormalValues();
+            } catch (error) {
+                showMessage(messageDiv, 'Fel vid sparande av profil', 'error');
+            }
+        }
+
+        function loadProfile() {
+            try {
+                const data = JSON.parse(localStorage.getItem('pefData') || '{}');
+                if (data.profile) {
+                    profile = data.profile;
+                    
+                    // Fyll i formuläret
+                    document.getElementById('nameInput').value = profile.name || '';
+                    document.getElementById('ageInput').value = profile.age || '';
+                    document.getElementById('genderInput').value = profile.gender || '';
+                    document.getElementById('heightInput').value = profile.height || '';
+                    
+                    displayProfile();
+                    calculateNormalValues();
+                }
+            } catch (error) {
+                console.error('Fel vid laddning av profil:', error);
+            }
+        }
+
+        function displayProfile() {
+            if (Object.keys(profile).length === 0) return;
+            
+            const profileDiv = document.getElementById('profileInfo');
+            const displayDiv = document.getElementById('profileDisplay');
+            
+            displayDiv.innerHTML = `
+                <p><strong>Namn:</strong> ${profile.name}</p>
+                <p><strong>Ålder:</strong> ${profile.age} år</p>
+                <p><strong>Kön:</strong> ${profile.gender}</p>
+                <p><strong>Längd:</strong> ${profile.height} cm</p>
+            `;
+            
+            profileDiv.style.display = 'block';
+        }
+
+        function calculateNormalValues() {
+            if (!profile.age || !profile.gender || !profile.height) return;
+            
+            let expectedPEF;
+            
+            // Förenklad beräkning baserad på ålder, kön och längd
+            if (profile.gender === 'man') {
+                expectedPEF = Math.round((profile.height * 3.95) + (profile.age * -2.6) + 165);
+            } else {
+                expectedPEF = Math.round((profile.height * 2.93) + (profile.age * -1.8) + 60);
+            }
+            
+            // Säkerställ rimliga värden
+            expectedPEF = Math.max(200, Math.min(800, expectedPEF));
+            
+            const normalDiv = document.getElementById('normalValues');
+            const displayDiv = document.getElementById('normalValuesDisplay');
+            
+            displayDiv.innerHTML = `
+                <p><strong>Förväntat PEF:</strong> ${expectedPEF} L/min</p>
+                <p><strong>Utmärkt:</strong> >${Math.round(expectedPEF * 0.8)} L/min</p>
+                <p><strong>Bra:</strong> ${Math.round(expectedPEF * 0.6)}-${Math.round(expectedPEF * 0.8)} L/min</p>
+                <p><strong>Måttligt:</strong> ${Math.round(expectedPEF * 0.4)}-${Math.round(expectedPEF * 0.6)} L/min</p>
+                <p><strong>Dåligt:</strong> <${Math.round(expectedPEF * 0.4)} L/min</p>
+            `;
+            
+            normalDiv.style.display = 'block';
+            profile.expectedPEF = expectedPEF;
+        }
+
+        function getPEFStatus(value) {
+            let expectedPEF = profile.expectedPEF;
+            
+            // Om ingen profil finns, använd generella värden
+            if (!expectedPEF) {
+                expectedPEF = 500; // Genomsnittligt värde
+            }
+            
+            const percentage = (value / expectedPEF) * 100;
+            
+            if (percentage > 80) return { status: 'Utmärkt', class: 'status-excellent' };
+            if (percentage > 60) return { status: 'Bra', class: 'status-good' };
+            if (percentage > 40) return { status: 'Måttligt', class: 'status-fair' };
+            return { status: 'Dåligt', class: 'status-poor' };
+        }
+
+        function updateDisplay() {
+            if (measurements.length === 0) return;
+            
+            const latestMeasurement = measurements[0];
+            const pefStatus = getPEFStatus(latestMeasurement.value);
+            
+            document.getElementById('pefValue').textContent = latestMeasurement.value;
+            
+            const statusElement = document.getElementById('pefStatus');
+            statusElement.textContent = pefStatus.status;
+            statusElement.className = `pef-status ${pefStatus.class}`;
+            
+            // Uppdatera färg på display baserat på status
+            const display = document.getElementById('pefDisplay');
+            let gradient;
+            switch (pefStatus.class) {
+                case 'status-excellent':
+                    gradient = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    break;
+                case 'status-good':
+                    gradient = 'linear-gradient(135deg, #FFC107, #FF8F00)';
+                    break;
+                case 'status-fair':
+                    gradient = 'linear-gradient(135deg, #FF9800, #F57C00)';
+                    break;
+                case 'status-poor':
+                    gradient = 'linear-gradient(135deg, #F44336, #D32F2F)';
+                    break;
+            }
+            display.style.background = gradient;
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            
+            if (measurements.length === 0) {
+                historyList.innerHTML = '<p>Inga mätningar än. Gör din första mätning!</p>';
+                return;
+            }
+            
+            historyList.innerHTML = measurements.map(measurement => {
+                const date = new Date(measurement.date);
+                const status = getPEFStatus(measurement.value);
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${date.toLocaleString('sv-SE')}</div>
+                        <div class="history-value">${measurement.value} L/min - ${status.status}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            if (measurements.length === 0) {
+                return;
+            }
+            
+            const chartData = measurements.slice().reverse().slice(-30); // Senaste 30 mätningarna
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(m => new Date(m.date).toLocaleDateString('sv-SE')),
+                    datasets: [{
+                        label: 'PEF (L/min)',
+                        data: chartData.map(m => m.value),
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: Math.min(...chartData.map(m => m.value)) - 50,
+                            max: Math.max(...chartData.map(m => m.value)) + 50
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function clearHistory() {
+            if
