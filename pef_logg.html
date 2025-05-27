@@ -473,14 +473,14 @@ document.getElementById("profile-form").addEventListener("submit", function(e) {
     height: document.getElementById("height").value
   };
 
-  // Rensar gammal profildata och sparar ny
-  localStorage.removeItem("pefProfile");
+  // Spara ny profildata (ersätter gammal)
   localStorage.setItem("pefProfile", JSON.stringify(profile));
 
-  calculatePredictedPEF(profile.age, profile.sex, profile.height);
+  // Räkna om och uppdatera visningen
+  predictedPEF = calculatePredictedPEF(profile.age, profile.sex, profile.height);
   updatePredictedDisplay();
 
-  alert("Profilen har sparats!");
+  alert("Profilen har sparats och uppdaterats.");
 });
 </script>
 
