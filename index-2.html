@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0ea5e9">
+<title>PEF Loggning</title>
+<link rel="stylesheet" href="./style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>PEF-loggning</h1>
+    <div class="row">
+      <button id="btnProfile" class="badge">Profil</button>
+      <button id="btnInstall" class="badge" style="display:none">Installera</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <label for="pefInput">PEF (L/min)</label>
+    <input id="pefInput" type="number" inputmode="numeric" placeholder="t.ex. 420" autocomplete="off">
+    <div class="row">
+      <button id="saveBtn" class="primary full">Spara</button>
+    </div>
+    <p class="small">Tips: Tryck Enter för att spara direkt.</p>
+  </section>
+
+  <section class="card">
+    <div class="row" style="justify-content:space-between;">
+      <select id="refMode">
+        <option value="personal">% av personlig bästa</option>
+        <option value="predicted">% av förväntat</option>
+      </select>
+      <button id="exportPdfBtn">Exportera PDF</button>
+    </div>
+    <canvas id="pefChart" width="600" height="260"></canvas>
+  </section>
+
+  <footer>© 2025 PEF</footer>
+
+  <dialog id="profileDlg">
+    <h3>Profil</h3>
+    <label for="sex">Kön</label>
+    <select id="sex"><option value="male">Man</option><option value="female">Kvinna</option></select>
+    <label for="birthYear">Födelseår</label><input id="birthYear" type="number" placeholder="1978">
+    <label for="heightCm">Längd (cm)</label><input id="heightCm" type="number" placeholder="178">
+    <label for="predMethod">Beräkningsmetod</label>
+    <select id="predMethod"><option value="eu_table">EU-tabell (standard)</option><option value="nunn_gregg">Nunn & Gregg</option></select>
+    <div class="row" style="justify-content:flex-end;">
+      <button id="profileSave" class="primary">Spara</button>
+      <button id="profileClose">Stäng</button>
+    </div>
+  </dialog>
+
+<script type="module">
+import { dailyBuckets, rollingAverage } from './src/stats.js';
+import { loadProfile, saveProfile, currentAge } from './src/profile.js';
+import { predictedPEF } from './src/prediction/predictor.js';
+import { downloadPefPdf } from './src/pdf/report.js';
+
+const input = document.getElementById('pefInput');
+const saveBtn = document.getElementById('saveBtn');
+const exportBtn = document.getElementById('exportPdfBtn');
+const refMode = document.getElementById('refMode');
+const installBtn = document.getElementById('btnInstall');
+
+// PWA install
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display='inline-block'; });
+installBtn.onclick = async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; installBtn.style.display='none'; };
+
+// SW
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
+
+function loadMeas(){ return JSON.parse(localStorage.getItem('pef_meas')||'[]'); }
+function saveMeas(arr){ localStorage.setItem('pef_meas', JSON.stringify(arr)); }
+
+// ensure profile + predicted
+function ensurePredicted(prof){
+  const age = currentAge(prof.birthYear);
+  const val = predictedPEF({sex:prof.sex, age, heightCm:Number(prof.heightCm)}, prof.method||'eu_table');
+  prof.predicted = val || prof.predicted || null;
+  return prof;
+}
+
+let profile = ensurePredicted( Object.assign({ sex:'male', birthYear:1980, heightCm:180, method:'eu_table' }, loadProfile()) );
+saveProfile(profile);
+
+let measurements = loadMeas();
+if (measurements.length === 0) {
+  // seed 30 dagar demo
+  const now = new Date(); now.setHours(9,0,0,0);
+  for (let i=29;i>=0;i--){
+    const d = new Date(now.getTime() - i*86400000);
+    const base = (profile.predicted||550) - 30 + Math.random()*60;
+    measurements.push({ ts: d.getTime(), pef: Math.round(base), zone: 'green', tags:['Demo'] });
+  }
+  saveMeas(measurements);
+}
+
+const ctx = document.getElementById('pefChart');
+let chart;
+
+function zoneBands(maxY){
+  const pred = (refMode.value==='predicted' && profile.predicted) ? profile.predicted : (profile.personalBest||profile.predicted||600);
+  const g = pred*0.8, y = pred*0.5;
+  return [{yMax: maxY, yMin: g, color: 'rgba(144,238,144,0.3)'},
+          {yMax: g, yMin: y, color: 'rgba(255,255,0,0.3)'},
+          {yMax: y, yMin: 0, color: 'rgba(255,0,0,0.25)'}];
+}
+
+function drawChart(){
+  const daily = dailyBuckets(measurements);
+  const r7 = rollingAverage(daily, 7, 'best');
+  const r14 = rollingAverage(daily, 14, 'best');
+  const labels = daily.map(d => new Date(d.day).toLocaleDateString());
+  const bests = daily.map(d => d.best);
+  const maxY = Math.max(...bests, (profile.predicted||700)) * 1.1;
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Bästa/dag', data: bests, pointRadius: 3, borderWidth: 1, tension: 0.2 },
+        { label: '7-d rullande', data: r7.map(x=>x.value), borderWidth: 1, tension: 0.3 },
+        { label: '14-d rullande', data: r14.map(x=>x.value), borderWidth: 1, borderDash: [4,3], tension: 0.3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { suggestedMax: maxY } },
+      plugins: { legend: { display: true } }
+    },
+    plugins: [{
+      id: 'zones',
+      beforeDraw(c, args, opts){
+        const { ctx, chartArea, scales: {y} } = c;
+        const bands = zoneBands(y.max);
+        bands.forEach(b => {
+          const top = y.getPixelForValue(b.yMax);
+          const bottom = y.getPixelForValue(b.yMin);
+          ctx.save(); ctx.fillStyle = b.color;
+          ctx.fillRect(chartArea.left, top, chartArea.right - chartArea.left, bottom - top);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+drawChart();
+
+saveBtn.addEventListener('click', () => {
+  const v = Number(input.value);
+  if (!Number.isFinite(v) || v < 60 || v > 800) { alert('Ange värde 60–800 L/min'); return; }
+  measurements.push({ ts: Date.now(), pef: Math.round(v), zone: 'green' });
+  saveMeas(measurements);
+  drawChart(); input.value='';
+});
+
+exportBtn.addEventListener('click', () => {
+  const daily = dailyBuckets(measurements);
+  const roll7 = rollingAverage(daily, 7, 'best');
+  const roll14 = rollingAverage(daily, 14, 'best');
+  const period = { from: new Date(measurements[0].ts), to: new Date(measurements[measurements.length-1].ts) };
+  downloadPefPdf({ profile, daily, roll7, roll14, raw: measurements, chartCanvas: ctx, period });
+});
+
+const dlg = document.getElementById('profileDlg');
+document.getElementById('btnProfile').onclick = () => { 
+  dlg.showModal();
+  document.getElementById('sex').value = profile.sex||'male';
+  document.getElementById('birthYear').value = profile.birthYear||'';
+  document.getElementById('heightCm').value = profile.heightCm||'';
+  document.getElementById('predMethod').value = profile.method||'eu_table';
+};
+document.getElementById('profileClose').onclick = () => dlg.close();
+document.getElementById('profileSave').onclick = () => {
+  profile.sex = document.getElementById('sex').value;
+  profile.birthYear = Number(document.getElementById('birthYear').value);
+  profile.heightCm = Number(document.getElementById('heightCm').value);
+  profile.method = document.getElementById('predMethod').value;
+  const age = currentAge(profile.birthYear);
+  profile.predicted = predictedPEF({sex:profile.sex, age, heightCm:profile.heightCm}, profile.method);
+  saveProfile(profile);
+  dlg.close();
+  drawChart();
+};
+
+// Focus behavior
+input.addEventListener('focus', () => input.select());
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveBtn.click(); });
+</script>
+</body>
+</html>
