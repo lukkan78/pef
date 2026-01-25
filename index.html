@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#6366f1">
+  <meta name="theme-color" content="#6366f1" id="themeColor">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.webmanifest">
@@ -42,18 +42,48 @@
       --gray-700: #374151;
       --gray-800: #1f2937;
       --gray-900: #111827;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-bg: white;
+      --text-primary: var(--gray-800);
+      --text-secondary: var(--gray-500);
+      --border-color: var(--gray-200);
+      --input-bg: white;
       --radius: 16px;
       --radius-sm: 12px;
       --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
       --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
 
+    /* Dark Mode */
+    [data-theme="dark"] {
+      --gray-50: #1f2937;
+      --gray-100: #374151;
+      --gray-200: #4b5563;
+      --gray-300: #6b7280;
+      --gray-400: #9ca3af;
+      --gray-500: #d1d5db;
+      --gray-600: #e5e7eb;
+      --gray-700: #f3f4f6;
+      --gray-800: #f9fafb;
+      --gray-900: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      --card-bg: #1f2937;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --border-color: #374151;
+      --input-bg: #374151;
+      --success-bg: rgba(16, 185, 129, 0.2);
+      --warning-bg: rgba(245, 158, 11, 0.2);
+      --danger-bg: rgba(239, 68, 68, 0.2);
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--bg-gradient);
       min-height: 100vh;
-      color: var(--gray-800);
+      color: var(--text-primary);
       padding-bottom: 100px;
+      transition: background 0.3s;
     }
 
     .container {
@@ -67,6 +97,7 @@
       text-align: center;
       padding: 24px 16px 16px;
       color: white;
+      position: relative;
     }
 
     header h1 {
@@ -81,13 +112,45 @@
       font-size: 14px;
     }
 
+    .header-actions {
+      position: absolute;
+      top: 24px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
     /* Cards */
     .card {
-      background: white;
+      background: var(--card-bg);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 16px;
       box-shadow: var(--shadow-lg);
+      transition: background 0.3s;
     }
 
     .card-header {
@@ -100,7 +163,7 @@
     .card-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--gray-700);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -123,10 +186,11 @@
       font-size: 48px;
       font-weight: 700;
       text-align: center;
-      border: 3px solid var(--gray-200);
+      border: 3px solid var(--border-color);
       border-radius: var(--radius);
       padding: 24px 16px;
-      color: var(--gray-800);
+      color: var(--text-primary);
+      background: var(--input-bg);
       transition: all 0.2s;
       -moz-appearance: textfield;
     }
@@ -144,7 +208,7 @@
     }
 
     .pef-input::placeholder {
-      color: var(--gray-300);
+      color: var(--gray-400);
       font-size: 32px;
     }
 
@@ -153,7 +217,7 @@
       right: 20px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--gray-400);
+      color: var(--text-secondary);
       font-size: 16px;
       font-weight: 500;
     }
@@ -169,7 +233,7 @@
       flex: 1;
       height: 8px;
       border-radius: 4px;
-      background: var(--gray-200);
+      background: var(--border-color);
       transition: all 0.3s;
     }
 
@@ -187,10 +251,14 @@
       margin-bottom: 16px;
     }
 
-    .zone-text.green { background: var(--success-bg); color: #065f46; }
-    .zone-text.yellow { background: var(--warning-bg); color: #92400e; }
-    .zone-text.red { background: var(--danger-bg); color: #991b1b; }
-    .zone-text.neutral { background: var(--gray-100); color: var(--gray-600); }
+    .zone-text.green { background: var(--success-bg); color: #10b981; }
+    .zone-text.yellow { background: var(--warning-bg); color: #f59e0b; }
+    .zone-text.red { background: var(--danger-bg); color: #ef4444; }
+    .zone-text.neutral { background: var(--gray-100); color: var(--text-secondary); }
+
+    [data-theme="dark"] .zone-text.green { color: #34d399; }
+    [data-theme="dark"] .zone-text.yellow { color: #fbbf24; }
+    [data-theme="dark"] .zone-text.red { color: #f87171; }
 
     /* Buttons */
     .btn {
@@ -225,7 +293,7 @@
 
     .btn-secondary {
       background: var(--gray-100);
-      color: var(--gray-700);
+      color: var(--text-primary);
     }
 
     .btn-secondary:hover {
@@ -258,7 +326,7 @@
     .btn-icon svg {
       width: 20px;
       height: 20px;
-      color: var(--gray-600);
+      color: var(--text-secondary);
     }
 
     /* Stats Grid */
@@ -279,12 +347,12 @@
     .stat-value {
       font-size: 24px;
       font-weight: 700;
-      color: var(--gray-800);
+      color: var(--text-primary);
     }
 
     .stat-label {
       font-size: 12px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
       margin-top: 4px;
     }
 
@@ -314,7 +382,7 @@
       display: flex;
       align-items: center;
       padding: 12px;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--border-color);
       gap: 12px;
     }
 
@@ -340,11 +408,12 @@
     .history-value {
       font-weight: 600;
       font-size: 16px;
+      color: var(--text-primary);
     }
 
     .history-time {
       font-size: 12px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
     }
 
     .history-delete {
@@ -365,19 +434,29 @@
       display: block;
       font-size: 14px;
       font-weight: 500;
-      color: var(--gray-700);
+      color: var(--text-primary);
       margin-bottom: 6px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
     }
 
     .form-input, .form-select {
       width: 100%;
       padding: 12px 16px;
       font-size: 16px;
-      border: 2px solid var(--gray-200);
+      border: 2px solid var(--border-color);
       border-radius: var(--radius-sm);
       font-family: inherit;
       transition: all 0.2s;
-      background: white;
+      background: var(--input-bg);
+      color: var(--text-primary);
     }
 
     .form-input:focus, .form-select:focus {
@@ -385,33 +464,52 @@
       border-color: var(--primary);
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      background: var(--gray-100);
-      border-radius: var(--radius-sm);
-      padding: 4px;
-      margin-bottom: 16px;
+    .form-input::placeholder {
+      color: var(--text-secondary);
     }
 
-    .tab {
+    /* Sex selector */
+    .sex-selector {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sex-option {
       flex: 1;
-      padding: 10px;
+      padding: 16px;
       text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--gray-600);
-      background: none;
-      border: none;
-      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .tab.active {
-      background: white;
-      color: var(--gray-800);
-      box-shadow: var(--shadow);
+    .sex-option:hover {
+      border-color: var(--primary-light);
+    }
+
+    .sex-option.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .sex-option svg {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .sex-option.active svg {
+      color: var(--primary);
+    }
+
+    .sex-option span {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
 
     /* Modal */
@@ -438,7 +536,7 @@
     }
 
     .modal {
-      background: white;
+      background: var(--card-bg);
       border-radius: var(--radius);
       padding: 24px;
       width: 100%;
@@ -446,7 +544,7 @@
       max-height: 90vh;
       overflow-y: auto;
       transform: translateY(20px);
-      transition: transform 0.3s;
+      transition: transform 0.3s, background 0.3s;
     }
 
     .modal-overlay.active .modal {
@@ -463,6 +561,7 @@
     .modal-title {
       font-size: 20px;
       font-weight: 600;
+      color: var(--text-primary);
     }
 
     /* Toast */
@@ -497,13 +596,14 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: white;
-      border-top: 1px solid var(--gray-200);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: space-around;
       padding: 8px 0;
       padding-bottom: max(8px, env(safe-area-inset-bottom));
       z-index: 100;
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .nav-item {
@@ -511,7 +611,7 @@
       flex-direction: column;
       align-items: center;
       padding: 8px 16px;
-      color: var(--gray-400);
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 12px;
       font-weight: 500;
@@ -545,7 +645,7 @@
     .empty-state {
       text-align: center;
       padding: 40px 20px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
     }
 
     .empty-state svg {
@@ -568,16 +668,17 @@
       text-align: center;
       font-size: 12px;
       font-weight: 500;
-      border: 2px solid var(--gray-200);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
-      background: white;
+      background: var(--input-bg);
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .ref-option.active {
       border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.05);
+      background: rgba(99, 102, 241, 0.1);
       color: var(--primary);
     }
 
@@ -652,12 +753,77 @@
       background: white;
       color: var(--primary-dark);
     }
+
+    /* Predicted display box */
+    .predicted-box {
+      background: var(--gray-50);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 8px;
+    }
+
+    .predicted-box .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .predicted-box .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Profile info display */
+    .profile-info {
+      background: var(--gray-50);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-info .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .profile-info .details {
+      flex: 1;
+    }
+
+    .profile-info .name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .profile-info .meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
   </style>
 </head>
 <body>
   <header>
+    <div class="header-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Växla mörkt/ljust läge">
+        <svg id="themeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+      </button>
+    </div>
     <h1>PEF-dagbok</h1>
-    <p>Spara din lungfunktion</p>
+    <p>Spåra din lungfunktion</p>
     <div class="profile-badge" onclick="showProfileModal()">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -670,7 +836,7 @@
     <!-- Install Banner -->
     <div class="install-banner" id="installBanner">
       <h3>Installera appen</h3>
-      <p>Lagg till PEF-dagbok pa din hemskarm for snabb atkomst och offline-anvandning.</p>
+      <p>Lägg till PEF-dagbok på din hemskärm för snabb åtkomst och offline-användning.</p>
       <button class="btn" onclick="installApp()">Installera</button>
     </div>
 
@@ -684,7 +850,7 @@
               <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
-              Ny matning
+              Ny mätning
             </span>
           </div>
 
@@ -699,13 +865,13 @@
             <div class="zone-bar red inactive" id="zoneRed"></div>
           </div>
 
-          <div class="zone-text neutral" id="zoneText">Ange ditt PEF-varde</div>
+          <div class="zone-text neutral" id="zoneText">Ange ditt PEF-värde</div>
 
           <button class="btn btn-primary" id="saveBtn" onclick="saveMeasurement()">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            Spara matning
+            Spara mätning
           </button>
         </div>
 
@@ -717,19 +883,19 @@
           <div class="stats-grid">
             <div class="stat-box highlight">
               <div class="stat-value" id="todayBest">--</div>
-              <div class="stat-label">Basta idag</div>
+              <div class="stat-label">Bästa idag</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="todayCount">0</div>
-              <div class="stat-label">Matningar</div>
+              <div class="stat-label">Mätningar</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="personalBest">--</div>
-              <div class="stat-label">Personbasta</div>
+              <div class="stat-label">Personbästa</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="predictedValue">--</div>
-              <div class="stat-label">Forvantat</div>
+              <div class="stat-label">Förväntat</div>
             </div>
           </div>
         </div>
@@ -748,8 +914,8 @@
           </div>
 
           <div class="ref-selector">
-            <button class="ref-option active" data-ref="personal" onclick="setRefMode('personal')">% av personbasta</button>
-            <button class="ref-option" data-ref="predicted" onclick="setRefMode('predicted')">% av forvantat</button>
+            <button class="ref-option active" data-ref="personal" onclick="setRefMode('personal')">% av personbästa</button>
+            <button class="ref-option" data-ref="predicted" onclick="setRefMode('predicted')">% av förväntat</button>
           </div>
 
           <div class="chart-container">
@@ -764,7 +930,7 @@
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-value" id="stat30Best">--</div>
-              <div class="stat-label">Basta</div>
+              <div class="stat-label">Bästa</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Avg">--</div>
@@ -772,22 +938,22 @@
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Low">--</div>
-              <div class="stat-label">Lagsta</div>
+              <div class="stat-label">Lägsta</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Count">0</div>
-              <div class="stat-label">Matningar</div>
+              <div class="stat-label">Mätningar</div>
             </div>
           </div>
 
           <div class="stats-grid" style="margin-top: 8px;">
             <div class="stat-box" style="background: var(--success-bg);">
-              <div class="stat-value" id="statGreen" style="color: #065f46;">0%</div>
-              <div class="stat-label" style="color: #065f46;">Gron zon</div>
+              <div class="stat-value" id="statGreen" style="color: var(--success);">0%</div>
+              <div class="stat-label" style="color: var(--success);">Grön zon</div>
             </div>
             <div class="stat-box" style="background: var(--warning-bg);">
-              <div class="stat-value" id="statYellow" style="color: #92400e;">0%</div>
-              <div class="stat-label" style="color: #92400e;">Gul zon</div>
+              <div class="stat-value" id="statYellow" style="color: var(--warning);">0%</div>
+              <div class="stat-label" style="color: var(--warning);">Gul zon</div>
             </div>
           </div>
         </div>
@@ -811,7 +977,7 @@
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
               </svg>
-              <p>Inga matningar annu</p>
+              <p>Inga mätningar ännu</p>
             </div>
           </div>
         </div>
@@ -874,37 +1040,69 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kon</label>
-        <select id="profileSex" class="form-select">
-          <option value="male">Man</option>
-          <option value="female">Kvinna</option>
-        </select>
+        <label class="form-label">Namn</label>
+        <input type="text" id="profileName" class="form-input" placeholder="Ditt namn">
       </div>
 
       <div class="form-group">
-        <label class="form-label">Fodelsear</label>
-        <input type="number" id="profileBirthYear" class="form-input" placeholder="t.ex. 1985" min="1920" max="2020">
+        <label class="form-label">Kön</label>
+        <div class="sex-selector">
+          <div class="sex-option" data-sex="male" onclick="selectSex('male')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="10" cy="14" r="5" stroke-width="2"/>
+              <path stroke-linecap="round" stroke-width="2" d="M14 10l5-5m0 0v4m0-4h-4"/>
+            </svg>
+            <span>Man</span>
+          </div>
+          <div class="sex-option" data-sex="female" onclick="selectSex('female')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="9" r="5" stroke-width="2"/>
+              <path stroke-linecap="round" stroke-width="2" d="M12 14v7m-3-3h6"/>
+            </svg>
+            <span>Kvinna</span>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Langd (cm)</label>
+        <label class="form-label">Födelsedatum</label>
+        <div class="form-row">
+          <div class="form-group">
+            <select id="profileBirthYear" class="form-select">
+              <option value="">År</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <select id="profileBirthMonth" class="form-select">
+              <option value="">Månad</option>
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Mars</option>
+              <option value="4">April</option>
+              <option value="5">Maj</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Augusti</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Längd (cm)</label>
         <input type="number" id="profileHeight" class="form-input" placeholder="t.ex. 175" min="100" max="220">
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Berakningsmetod</label>
-        <select id="profileMethod" class="form-select">
-          <option value="eu_table">EU-standardtabell</option>
-          <option value="nunn_gregg">Nunn & Gregg</option>
-        </select>
+      <div class="predicted-box">
+        <div class="label">Förväntat PEF-värde</div>
+        <div class="value" id="predictedDisplay">-- L/min</div>
       </div>
 
-      <div class="form-group" style="background: var(--gray-50); padding: 16px; border-radius: var(--radius-sm); margin-top: 8px;">
-        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Forvantat PEF-varde</div>
-        <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="predictedDisplay">-- L/min</div>
-      </div>
-
-      <button class="btn btn-primary" onclick="saveProfile()" style="margin-top: 8px;">Spara profil</button>
+      <button class="btn btn-primary" onclick="saveProfile()" style="margin-top: 16px;">Spara profil</button>
     </div>
   </div>
 
@@ -918,20 +1116,23 @@
 
     let measurements = [];
     let profile = {
+      name: '',
       sex: 'male',
       birthYear: null,
+      birthMonth: null,
       heightCm: null,
-      method: 'eu_table',
       predicted: null,
       personalBest: null
     };
     let chart = null;
     let refMode = 'personal';
     let deferredPrompt = null;
+    let darkMode = false;
 
     function loadData() {
       const savedMeas = localStorage.getItem('pef_measurements');
       const savedProfile = localStorage.getItem('pef_profile');
+      const savedTheme = localStorage.getItem('pef_theme');
 
       if (savedMeas) {
         measurements = JSON.parse(savedMeas);
@@ -939,6 +1140,12 @@
 
       if (savedProfile) {
         profile = { ...profile, ...JSON.parse(savedProfile) };
+      }
+
+      if (savedTheme === 'dark') {
+        darkMode = true;
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon();
       }
 
       // Calculate personal best
@@ -950,11 +1157,55 @@
       if (profile.birthYear && profile.heightCm) {
         profile.predicted = calculatePredictedPEF();
       }
+
+      // Populate birth year dropdown
+      populateBirthYears();
     }
 
     function saveData() {
       localStorage.setItem('pef_measurements', JSON.stringify(measurements));
       localStorage.setItem('pef_profile', JSON.stringify(profile));
+    }
+
+    function populateBirthYears() {
+      const select = document.getElementById('profileBirthYear');
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear - 5; year >= currentYear - 100; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        select.appendChild(option);
+      }
+    }
+
+    // ============================================
+    // Theme Toggle
+    // ============================================
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      if (darkMode) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('pef_theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('pef_theme', 'light');
+      }
+      updateThemeIcon();
+
+      // Update chart colors
+      if (chart) {
+        updateChart();
+      }
+    }
+
+    function updateThemeIcon() {
+      const icon = document.getElementById('themeIcon');
+      if (darkMode) {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+      }
     }
 
     // ============================================
@@ -1009,12 +1260,22 @@
       return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     }
 
-    function calculatePredictedPEF() {
-      if (!profile.birthYear || !profile.heightCm || !profile.sex) return null;
+    function calculateAge(birthYear, birthMonth) {
+      const now = new Date();
+      let age = now.getFullYear() - birthYear;
+      if (birthMonth && now.getMonth() + 1 < birthMonth) {
+        age--;
+      }
+      return age;
+    }
 
-      const age = new Date().getFullYear() - profile.birthYear;
-      const height = profile.heightCm;
-      const table = EU_TABLE[profile.sex];
+    function calculatePredictedPEF(tempProfile = null) {
+      const p = tempProfile || profile;
+      if (!p.birthYear || !p.heightCm || !p.sex) return null;
+
+      const age = calculateAge(p.birthYear, p.birthMonth);
+      const height = p.heightCm;
+      const table = EU_TABLE[p.sex];
 
       if (!table) return null;
 
@@ -1079,10 +1340,10 @@
 
     function getZoneText(zone) {
       switch(zone) {
-        case 'green': return 'Gron zon - Bra kontroll';
-        case 'yellow': return 'Gul zon - Var uppmarksam';
-        case 'red': return 'Rod zon - Agera nu';
-        default: return 'Ange ditt PEF-varde';
+        case 'green': return 'Grön zon - Bra kontroll';
+        case 'yellow': return 'Gul zon - Var uppmärksam';
+        case 'red': return 'Röd zon - Agera nu';
+        default: return 'Ange ditt PEF-värde';
       }
     }
 
@@ -1097,7 +1358,7 @@
         zoneYellow.classList.add('inactive');
         zoneRed.classList.add('inactive');
         zoneText.className = 'zone-text neutral';
-        zoneText.textContent = 'Ange ditt PEF-varde';
+        zoneText.textContent = 'Ange ditt PEF-värde';
         return;
       }
 
@@ -1120,7 +1381,7 @@
       const value = parseInt(input.value);
 
       if (!value || value < 60 || value > 900) {
-        showToast('Ange ett varde mellan 60-900 L/min', 'error');
+        showToast('Ange ett värde mellan 60-900 L/min', 'error');
         return;
       }
 
@@ -1143,7 +1404,7 @@
       input.value = '';
       updateZoneIndicator(null);
       updateUI();
-      showToast('Matning sparad!', 'success');
+      showToast('Mätning sparad!', 'success');
 
       // Animate button
       document.getElementById('saveBtn').classList.add('pulse');
@@ -1151,7 +1412,7 @@
     }
 
     function deleteMeasurement(id) {
-      if (!confirm('Ta bort denna matning?')) return;
+      if (!confirm('Ta bort denna mätning?')) return;
 
       measurements = measurements.filter(m => m.id !== id);
 
@@ -1162,11 +1423,11 @@
 
       saveData();
       updateUI();
-      showToast('Matning borttagen');
+      showToast('Mätning borttagen');
     }
 
     function clearAllData() {
-      if (!confirm('Ar du saker pa att du vill radera ALL data? Detta kan inte angras.')) return;
+      if (!confirm('Är du säker på att du vill radera ALL data? Detta kan inte ångras.')) return;
 
       measurements = [];
       profile.personalBest = null;
@@ -1216,7 +1477,7 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            <p>Inga matningar annu</p>
+            <p>Inga mätningar ännu</p>
           </div>
         `;
         return;
@@ -1281,9 +1542,11 @@
 
     function updateProfileBadge() {
       const badge = document.getElementById('profileBadgeText');
-      if (profile.birthYear && profile.heightCm) {
-        const age = new Date().getFullYear() - profile.birthYear;
-        badge.textContent = `${age} ar, ${profile.heightCm} cm`;
+      if (profile.name) {
+        badge.textContent = profile.name;
+      } else if (profile.birthYear && profile.heightCm) {
+        const age = calculateAge(profile.birthYear, profile.birthMonth);
+        badge.textContent = `${age} år, ${profile.heightCm} cm`;
       } else {
         badge.textContent = 'Ange profil';
       }
@@ -1336,8 +1599,10 @@
 
       const daily = dailyBuckets();
 
+      const textColor = darkMode ? '#e5e7eb' : '#374151';
+      const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+
       if (daily.length === 0) {
-        // Draw empty state
         chart = new Chart(ctx, {
           type: 'line',
           data: { labels: [], datasets: [] },
@@ -1346,13 +1611,16 @@
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false }
+            },
+            scales: {
+              x: { ticks: { color: textColor } },
+              y: { ticks: { color: textColor } }
             }
           }
         });
         return;
       }
 
-      // Take last 30 days
       const last30 = daily.slice(-30);
       const r7 = rollingAverage(last30, 7);
 
@@ -1375,10 +1643,10 @@
           labels,
           datasets: [
             {
-              label: 'Basta/dag',
+              label: 'Bästa/dag',
               data: last30.map(d => d.best),
               borderColor: '#6366f1',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              backgroundColor: darkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)',
               borderWidth: 2,
               pointRadius: 4,
               pointBackgroundColor: '#6366f1',
@@ -1407,30 +1675,24 @@
             y: {
               min: 0,
               max: maxY,
-              grid: {
-                color: 'rgba(0,0,0,0.05)'
-              }
+              grid: { color: gridColor },
+              ticks: { color: textColor }
             },
             x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                maxTicksLimit: 6
-              }
+              grid: { display: false },
+              ticks: { maxTicksLimit: 6, color: textColor }
             }
           },
           plugins: {
             legend: {
               display: true,
               position: 'bottom',
-              labels: {
-                boxWidth: 12,
-                padding: 16
-              }
+              labels: { boxWidth: 12, padding: 16, color: textColor }
             },
             tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
+              backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
+              titleColor: darkMode ? '#111' : '#fff',
+              bodyColor: darkMode ? '#111' : '#fff',
               padding: 12,
               cornerRadius: 8
             }
@@ -1444,32 +1706,14 @@
 
             const y = scales.y;
 
-            // Green zone (80%+)
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(maxY),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(greenLine) - y.getPixelForValue(maxY)
-            );
+            ctx.fillStyle = darkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(maxY), chartArea.right - chartArea.left, y.getPixelForValue(greenLine) - y.getPixelForValue(maxY));
 
-            // Yellow zone (50-80%)
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(greenLine),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine)
-            );
+            ctx.fillStyle = darkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(greenLine), chartArea.right - chartArea.left, y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine));
 
-            // Red zone (<50%)
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(yellowLine),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(0) - y.getPixelForValue(yellowLine)
-            );
+            ctx.fillStyle = darkMode ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(yellowLine), chartArea.right - chartArea.left, y.getPixelForValue(0) - y.getPixelForValue(yellowLine));
           }
         }]
       });
@@ -1481,11 +1725,7 @@
         btn.classList.toggle('active', btn.dataset.ref === mode);
       });
 
-      // Recalculate zones for all measurements
-      measurements = measurements.map(m => ({
-        ...m,
-        zone: getZone(m.pef)
-      }));
+      measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
       saveData();
 
       updateChart();
@@ -1496,11 +1736,22 @@
     // Profile
     // ============================================
 
+    function selectSex(sex) {
+      document.querySelectorAll('.sex-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.sex === sex);
+      });
+      updatePredictedDisplay();
+    }
+
     function showProfileModal() {
-      document.getElementById('profileSex').value = profile.sex || 'male';
+      document.getElementById('profileName').value = profile.name || '';
       document.getElementById('profileBirthYear').value = profile.birthYear || '';
+      document.getElementById('profileBirthMonth').value = profile.birthMonth || '';
       document.getElementById('profileHeight').value = profile.heightCm || '';
-      document.getElementById('profileMethod').value = profile.method || 'eu_table';
+
+      document.querySelectorAll('.sex-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.sex === (profile.sex || 'male'));
+      });
 
       updatePredictedDisplay();
       document.getElementById('profileModal').classList.add('active');
@@ -1511,36 +1762,29 @@
     }
 
     function updatePredictedDisplay() {
-      const sex = document.getElementById('profileSex').value;
+      const sex = document.querySelector('.sex-option.active')?.dataset.sex || 'male';
       const birthYear = parseInt(document.getElementById('profileBirthYear').value);
+      const birthMonth = parseInt(document.getElementById('profileBirthMonth').value);
       const height = parseInt(document.getElementById('profileHeight').value);
 
       if (birthYear && height) {
-        const tempProfile = { sex, birthYear, heightCm: height };
-        const oldProfile = profile;
-        profile = tempProfile;
-        const predicted = calculatePredictedPEF();
-        profile = oldProfile;
-
-        document.getElementById('predictedDisplay').textContent =
-          predicted ? `${predicted} L/min` : '-- L/min';
+        const tempProfile = { sex, birthYear, birthMonth, heightCm: height };
+        const predicted = calculatePredictedPEF(tempProfile);
+        document.getElementById('predictedDisplay').textContent = predicted ? `${predicted} L/min` : '-- L/min';
       } else {
         document.getElementById('predictedDisplay').textContent = '-- L/min';
       }
     }
 
     function saveProfile() {
-      profile.sex = document.getElementById('profileSex').value;
+      profile.name = document.getElementById('profileName').value.trim();
+      profile.sex = document.querySelector('.sex-option.active')?.dataset.sex || 'male';
       profile.birthYear = parseInt(document.getElementById('profileBirthYear').value) || null;
+      profile.birthMonth = parseInt(document.getElementById('profileBirthMonth').value) || null;
       profile.heightCm = parseInt(document.getElementById('profileHeight').value) || null;
-      profile.method = document.getElementById('profileMethod').value;
       profile.predicted = calculatePredictedPEF();
 
-      // Recalculate zones
-      measurements = measurements.map(m => ({
-        ...m,
-        zone: getZone(m.pef)
-      }));
+      measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
 
       saveData();
       hideProfileModal();
@@ -1554,7 +1798,7 @@
 
     function exportCSV() {
       if (measurements.length === 0) {
-        showToast('Inga matningar att exportera', 'error');
+        showToast('Inga mätningar att exportera', 'error');
         return;
       }
 
@@ -1568,7 +1812,7 @@
           date.toLocaleDateString('sv-SE'),
           date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }),
           m.pef,
-          m.zone === 'green' ? 'Gron' : m.zone === 'yellow' ? 'Gul' : 'Rod',
+          m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd',
           pct + '%'
         ];
       });
@@ -1588,7 +1832,7 @@
 
     function exportPDF() {
       if (measurements.length === 0) {
-        showToast('Inga matningar att exportera', 'error');
+        showToast('Inga mätningar att exportera', 'error');
         return;
       }
 
@@ -1597,13 +1841,11 @@
 
       let y = 20;
 
-      // Title
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
       doc.text('PEF-rapport', 20, y);
       y += 15;
 
-      // Date range
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
       const firstDate = new Date(Math.min(...measurements.map(m => m.ts)));
@@ -1611,26 +1853,29 @@
       doc.text(`Period: ${firstDate.toLocaleDateString('sv-SE')} - ${lastDate.toLocaleDateString('sv-SE')}`, 20, y);
       y += 12;
 
-      // Profile info
+      if (profile.name) {
+        doc.text(`Patient: ${profile.name}`, 20, y);
+        y += 8;
+      }
+
       if (profile.birthYear) {
-        const age = new Date().getFullYear() - profile.birthYear;
-        doc.text(`Patient: ${profile.sex === 'female' ? 'Kvinna' : 'Man'}, ${age} ar, ${profile.heightCm || '-'} cm`, 20, y);
+        const age = calculateAge(profile.birthYear, profile.birthMonth);
+        doc.text(`${profile.sex === 'female' ? 'Kvinna' : 'Man'}, ${age} år, ${profile.heightCm || '-'} cm`, 20, y);
         y += 8;
       }
 
       if (profile.predicted) {
-        doc.text(`Forvantat PEF: ${profile.predicted} L/min`, 20, y);
+        doc.text(`Förväntat PEF: ${profile.predicted} L/min`, 20, y);
         y += 8;
       }
 
       if (profile.personalBest) {
-        doc.text(`Personbasta: ${profile.personalBest} L/min`, 20, y);
+        doc.text(`Personbästa: ${profile.personalBest} L/min`, 20, y);
         y += 8;
       }
 
       y += 10;
 
-      // Statistics
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('Sammanfattning', 20, y);
@@ -1643,21 +1888,19 @@
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Antal matningar: ${measurements.length}`, 20, y); y += 7;
-      doc.text(`Hogsta varde: ${best} L/min`, 20, y); y += 7;
-      doc.text(`Lagsta varde: ${low} L/min`, 20, y); y += 7;
-      doc.text(`Medelvarde: ${avg} L/min`, 20, y); y += 7;
+      doc.text(`Antal mätningar: ${measurements.length}`, 20, y); y += 7;
+      doc.text(`Högsta värde: ${best} L/min`, 20, y); y += 7;
+      doc.text(`Lägsta värde: ${low} L/min`, 20, y); y += 7;
+      doc.text(`Medelvärde: ${avg} L/min`, 20, y); y += 7;
 
-      // Zone distribution
       const greenCount = measurements.filter(m => m.zone === 'green').length;
       const yellowCount = measurements.filter(m => m.zone === 'yellow').length;
       const redCount = measurements.filter(m => m.zone === 'red').length;
 
-      doc.text(`Gron zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
+      doc.text(`Grön zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
       doc.text(`Gul zon: ${Math.round(100 * yellowCount / measurements.length)}%`, 20, y); y += 7;
-      doc.text(`Rod zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
+      doc.text(`Röd zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
 
-      // Add chart image
       const chartCanvas = document.getElementById('pefChart');
       if (chartCanvas) {
         const chartImg = chartCanvas.toDataURL('image/png', 1.0);
@@ -1667,7 +1910,6 @@
         y += imgHeight + 15;
       }
 
-      // Measurements table
       if (y > 250) {
         doc.addPage();
         y = 20;
@@ -1675,7 +1917,7 @@
 
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Matningar', 20, y);
+      doc.text('Mätningar', 20, y);
       y += 10;
 
       const tableData = measurements
@@ -1690,13 +1932,13 @@
             date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }),
             `${m.pef} L/min`,
             `${pct}%`,
-            m.zone === 'green' ? 'Gron' : m.zone === 'yellow' ? 'Gul' : 'Rod'
+            m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd'
           ];
         });
 
       doc.autoTable({
         startY: y,
-        head: [['Datum', 'Tid', 'Varde', '% av ref', 'Zon']],
+        head: [['Datum', 'Tid', 'Värde', '% av ref', 'Zon']],
         body: tableData,
         styles: { fontSize: 9 },
         headStyles: { fillColor: [99, 102, 241] }
@@ -1731,10 +1973,7 @@
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.className = 'toast show ' + type;
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
     // ============================================
@@ -1749,15 +1988,13 @@
 
     function installApp() {
       if (!deferredPrompt) return;
-
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((result) => {
+      deferredPrompt.userChoice.then(() => {
         deferredPrompt = null;
         document.getElementById('installBanner').classList.remove('show');
       });
     }
 
-    // Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').catch(() => {});
     }
@@ -1771,25 +2008,19 @@
     });
 
     document.getElementById('pefInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        saveMeasurement();
-      }
+      if (e.key === 'Enter') saveMeasurement();
     });
 
     document.getElementById('pefInput').addEventListener('focus', (e) => {
       e.target.select();
     });
 
-    // Profile form listeners
-    ['profileSex', 'profileBirthYear', 'profileHeight'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updatePredictedDisplay);
+    ['profileBirthYear', 'profileBirthMonth', 'profileHeight'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updatePredictedDisplay);
     });
 
-    // Close modal on overlay click
     document.getElementById('profileModal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) {
-        hideProfileModal();
-      }
+      if (e.target.classList.contains('modal-overlay')) hideProfileModal();
     });
 
     // ============================================
