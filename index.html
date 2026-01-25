@@ -433,6 +433,58 @@
       }
     }
 
+    /* Variability details list */
+    .variability-list {
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .variability-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+
+    .variability-item:last-child {
+      border-bottom: none;
+    }
+
+    .variability-date {
+      color: var(--text-secondary);
+    }
+
+    .variability-values {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .variability-percent {
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .variability-percent.good {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .variability-percent.moderate {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .variability-percent.poor {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
     .show-all-btn {
       width: 100%;
       padding: 12px;
@@ -1152,9 +1204,12 @@
             </div>
           </div>
 
-          <div class="stat-box" style="margin-top: 8px;">
+          <div class="stat-box" style="margin-top: 8px; cursor: pointer;" onclick="toggleVariabilityDetails()">
             <div class="stat-value" id="statVariability">--%</div>
-            <div class="stat-label">Dygnsvariabilitet</div>
+            <div class="stat-label">Dygnsvariabilitet <span style="font-size: 10px; opacity: 0.7;">(tryck för detaljer)</span></div>
+          </div>
+          <div id="variabilityDetails" style="display: none; margin-top: 8px;">
+            <div class="variability-list" id="variabilityList"></div>
           </div>
         </div>
 
@@ -1882,6 +1937,90 @@
       return dailyVariabilities.reduce((sum, v) => sum + v, 0) / dailyVariabilities.length;
     }
 
+    // Returnerar detaljerad data per dag för visning och export
+    function getDailyVariabilityDetails(measurements) {
+      const byDay = new Map();
+
+      for (const m of measurements) {
+        const date = new Date(m.ts);
+        const dayKey = date.toISOString().slice(0, 10);
+        const hour = date.getHours();
+
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, { morning: [], evening: [] });
+        }
+
+        if (hour >= 5 && hour < 10) {
+          byDay.get(dayKey).morning.push(m.pef);
+        } else if (hour >= 18 && hour < 23) {
+          byDay.get(dayKey).evening.push(m.pef);
+        }
+      }
+
+      const details = [];
+
+      for (const [day, values] of byDay) {
+        if (values.morning.length > 0 && values.evening.length > 0) {
+          const morningBest = Math.max(...values.morning);
+          const eveningBest = Math.max(...values.evening);
+          const higher = Math.max(morningBest, eveningBest);
+          const lower = Math.min(morningBest, eveningBest);
+          const variability = ((higher - lower) / higher) * 100;
+
+          details.push({
+            date: day,
+            morning: morningBest,
+            evening: eveningBest,
+            variability: Math.round(variability)
+          });
+        }
+      }
+
+      // Sortera senaste först
+      return details.sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    let showVariabilityDetails = false;
+
+    function toggleVariabilityDetails() {
+      showVariabilityDetails = !showVariabilityDetails;
+      const container = document.getElementById('variabilityDetails');
+      container.style.display = showVariabilityDetails ? 'block' : 'none';
+
+      if (showVariabilityDetails) {
+        updateVariabilityList();
+      }
+    }
+
+    function updateVariabilityList() {
+      const list = document.getElementById('variabilityList');
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const recent = measurements.filter(m => m.ts >= thirtyDaysAgo);
+      const details = getDailyVariabilityDetails(recent);
+
+      if (details.length === 0) {
+        list.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-secondary);">Logga morgon- och kvällsvärden för att se daglig variabilitet</div>';
+        return;
+      }
+
+      list.innerHTML = details.map(d => {
+        const dateStr = new Date(d.date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+        let colorClass = 'good';
+        if (d.variability >= 20) colorClass = 'poor';
+        else if (d.variability >= 10) colorClass = 'moderate';
+
+        return `
+          <div class="variability-item">
+            <div>
+              <div class="variability-date">${dateStr}</div>
+              <div class="variability-values">M: ${d.morning} / K: ${d.evening}</div>
+            </div>
+            <div class="variability-percent ${colorClass}">${d.variability}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function updateProfileBadge() {
       const badge = document.getElementById('profileBadgeText');
       if (profile.name) {
@@ -2252,6 +2391,42 @@
       doc.text(`Grön zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
       doc.text(`Gul zon: ${Math.round(100 * yellowCount / measurements.length)}%`, 20, y); y += 7;
       doc.text(`Röd zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
+
+      // Dygnsvariabilitet per dag
+      const variabilityDetails = getDailyVariabilityDetails(measurements);
+      if (variabilityDetails.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Dygnsvariabilitet', 20, y);
+        y += 10;
+
+        const avgVariability = variabilityDetails.reduce((sum, d) => sum + d.variability, 0) / variabilityDetails.length;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Medelvärde: ${Math.round(avgVariability)}%`, 20, y);
+        y += 8;
+
+        const variabilityTableData = variabilityDetails.slice(0, 14).map(d => {
+          const dateStr = new Date(d.date).toLocaleDateString('sv-SE');
+          let status = 'Bra';
+          if (d.variability >= 20) status = 'Hög';
+          else if (d.variability >= 10) status = 'Måttlig';
+          return [dateStr, `${d.morning}`, `${d.evening}`, `${d.variability}%`, status];
+        });
+
+        doc.autoTable({
+          startY: y,
+          head: [['Datum', 'Morgon', 'Kväll', 'Variabilitet', 'Status']],
+          body: variabilityTableData,
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [99, 102, 241] },
+          columnStyles: {
+            4: { fontStyle: 'bold' }
+          }
+        });
+
+        y = doc.lastAutoTable.finalY + 15;
+      }
 
       const chartCanvas = document.getElementById('pefChart');
       if (chartCanvas) {
