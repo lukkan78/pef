@@ -1830,9 +1830,56 @@
       document.getElementById('statGreen').textContent = Math.round(100 * greenCount / recent.length) + '%';
       document.getElementById('statYellow').textContent = Math.round(100 * yellowCount / recent.length) + '%';
 
-      // Variability: (max - min) / mean × 100
-      const variability = ((best - low) / avg) * 100;
-      document.getElementById('statVariability').textContent = Math.round(variability) + '%';
+      // Dygnsvariabilitet: kliniskt korrekt beräkning (morgon vs kväll)
+      const variability = calculateDailyVariability(recent);
+      document.getElementById('statVariability').textContent = variability !== null ? Math.round(variability) + '%' : '--%';
+    }
+
+    // Beräknar kliniskt korrekt dygnsvariabilitet
+    // Kräver mätningar både morgon (05-10) och kväll (18-23)
+    function calculateDailyVariability(measurements) {
+      // Gruppera mätningar per dag
+      const byDay = new Map();
+
+      for (const m of measurements) {
+        const date = new Date(m.ts);
+        const dayKey = date.toISOString().slice(0, 10);
+        const hour = date.getHours();
+
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, { morning: [], evening: [] });
+        }
+
+        // Morgon: 05:00-09:59
+        if (hour >= 5 && hour < 10) {
+          byDay.get(dayKey).morning.push(m.pef);
+        }
+        // Kväll: 18:00-22:59
+        else if (hour >= 18 && hour < 23) {
+          byDay.get(dayKey).evening.push(m.pef);
+        }
+        // Övriga tider räknas inte in i variabiliteten
+      }
+
+      // Beräkna variabilitet för dagar med både morgon- och kvällsvärden
+      const dailyVariabilities = [];
+
+      for (const [day, values] of byDay) {
+        if (values.morning.length > 0 && values.evening.length > 0) {
+          const morningBest = Math.max(...values.morning);
+          const eveningBest = Math.max(...values.evening);
+          const higher = Math.max(morningBest, eveningBest);
+          const lower = Math.min(morningBest, eveningBest);
+          const dayVariability = ((higher - lower) / higher) * 100;
+          dailyVariabilities.push(dayVariability);
+        }
+      }
+
+      if (dailyVariabilities.length === 0) {
+        return null;
+      }
+
+      return dailyVariabilities.reduce((sum, v) => sum + v, 0) / dailyVariabilities.length;
     }
 
     function updateProfileBadge() {
