@@ -418,12 +418,37 @@
     }
 
     .history-delete {
-      opacity: 0;
+      opacity: 0.5;
       transition: opacity 0.2s;
     }
 
     .history-item:hover .history-delete {
       opacity: 1;
+    }
+
+    /* Touch devices - always show delete button */
+    @media (hover: none) {
+      .history-delete {
+        opacity: 0.7;
+      }
+    }
+
+    .show-all-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      background: var(--gray-100);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .show-all-btn:hover {
+      background: var(--gray-200);
     }
 
     /* Profile Form */
@@ -1126,6 +1151,17 @@
               <div class="stat-label" style="color: var(--warning);">Gul zon</div>
             </div>
           </div>
+
+          <div class="stats-grid" style="margin-top: 8px;">
+            <div class="stat-box">
+              <div class="stat-value" id="statVariability">--%</div>
+              <div class="stat-label">Dygnsvariabilitet</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="statMorningDip">--%</div>
+              <div class="stat-label">Morgondipp</div>
+            </div>
+          </div>
         </div>
 
         <!-- AI Insights Card -->
@@ -1338,6 +1374,7 @@
     let refMode = 'personal';
     let deferredPrompt = null;
     let darkMode = false;
+    let showAllHistory = false;
 
     function loadData() {
       const savedMeas = localStorage.getItem('pef_measurements');
@@ -1650,6 +1687,11 @@
       setTimeout(() => document.getElementById('saveBtn').classList.remove('pulse'), 300);
     }
 
+    function toggleHistoryView() {
+      showAllHistory = !showAllHistory;
+      updateHistoryList();
+    }
+
     function deleteMeasurement(id) {
       if (!confirm('Ta bort denna mätning?')) return;
 
@@ -1725,8 +1767,11 @@
 
       // Sort by newest first
       const sorted = [...measurements].sort((a, b) => b.ts - a.ts);
+      const displayLimit = showAllHistory ? 50 : 3;
+      const displayList = sorted.slice(0, displayLimit);
+      const hasMore = sorted.length > 3;
 
-      list.innerHTML = sorted.slice(0, 50).map(m => {
+      let html = displayList.map(m => {
         const date = new Date(m.ts);
         const dateStr = date.toLocaleDateString('sv-SE');
         const timeStr = date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
@@ -1738,7 +1783,7 @@
               <div class="history-value">${m.pef} L/min</div>
               <div class="history-time">${dateStr} kl ${timeStr}</div>
             </div>
-            <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})">
+            <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})" title="Ta bort">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
@@ -1746,6 +1791,17 @@
           </div>
         `;
       }).join('');
+
+      // Add "Show more" / "Show less" button if there are more than 3
+      if (hasMore) {
+        if (showAllHistory) {
+          html += `<button class="show-all-btn" onclick="toggleHistoryView()">Visa färre</button>`;
+        } else {
+          html += `<button class="show-all-btn" onclick="toggleHistoryView()">Visa alla (${sorted.length} mätningar)</button>`;
+        }
+      }
+
+      list.innerHTML = html;
     }
 
     function updateStatistics() {
@@ -1759,6 +1815,8 @@
         document.getElementById('stat30Count').textContent = '0';
         document.getElementById('statGreen').textContent = '0%';
         document.getElementById('statYellow').textContent = '0%';
+        document.getElementById('statVariability').textContent = '--%';
+        document.getElementById('statMorningDip').textContent = '--%';
         return;
       }
 
@@ -1778,6 +1836,29 @@
 
       document.getElementById('statGreen').textContent = Math.round(100 * greenCount / recent.length) + '%';
       document.getElementById('statYellow').textContent = Math.round(100 * yellowCount / recent.length) + '%';
+
+      // Variability: (max - min) / mean × 100
+      const variability = ((best - low) / avg) * 100;
+      document.getElementById('statVariability').textContent = Math.round(variability) + '%';
+
+      // Morning dip: compare morning (05-10) vs evening (18-23) measurements
+      const morningMeas = recent.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 5 && hour < 10;
+      });
+      const eveningMeas = recent.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 18 && hour < 23;
+      });
+
+      if (morningMeas.length >= 2 && eveningMeas.length >= 2) {
+        const morningAvg = morningMeas.reduce((sum, m) => sum + m.pef, 0) / morningMeas.length;
+        const eveningAvg = eveningMeas.reduce((sum, m) => sum + m.pef, 0) / eveningMeas.length;
+        const dip = ((eveningAvg - morningAvg) / eveningAvg) * 100;
+        document.getElementById('statMorningDip').textContent = Math.round(Math.max(0, dip)) + '%';
+      } else {
+        document.getElementById('statMorningDip').textContent = '--%';
+      }
     }
 
     function updateProfileBadge() {
