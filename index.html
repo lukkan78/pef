@@ -1152,15 +1152,9 @@
             </div>
           </div>
 
-          <div class="stats-grid" style="margin-top: 8px;">
-            <div class="stat-box">
-              <div class="stat-value" id="statVariability">--%</div>
-              <div class="stat-label">Dygnsvariabilitet</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value" id="statMorningDip">--%</div>
-              <div class="stat-label">Morgondipp</div>
-            </div>
+          <div class="stat-box" style="margin-top: 8px;">
+            <div class="stat-value" id="statVariability">--%</div>
+            <div class="stat-label">Dygnsvariabilitet</div>
           </div>
         </div>
 
@@ -1816,7 +1810,6 @@
         document.getElementById('statGreen').textContent = '0%';
         document.getElementById('statYellow').textContent = '0%';
         document.getElementById('statVariability').textContent = '--%';
-        document.getElementById('statMorningDip').textContent = '--%';
         return;
       }
 
@@ -1840,25 +1833,6 @@
       // Variability: (max - min) / mean × 100
       const variability = ((best - low) / avg) * 100;
       document.getElementById('statVariability').textContent = Math.round(variability) + '%';
-
-      // Morning dip: compare morning (05-10) vs evening (18-23) measurements
-      const morningMeas = recent.filter(m => {
-        const hour = new Date(m.ts).getHours();
-        return hour >= 5 && hour < 10;
-      });
-      const eveningMeas = recent.filter(m => {
-        const hour = new Date(m.ts).getHours();
-        return hour >= 18 && hour < 23;
-      });
-
-      if (morningMeas.length >= 2 && eveningMeas.length >= 2) {
-        const morningAvg = morningMeas.reduce((sum, m) => sum + m.pef, 0) / morningMeas.length;
-        const eveningAvg = eveningMeas.reduce((sum, m) => sum + m.pef, 0) / eveningMeas.length;
-        const dip = ((eveningAvg - morningAvg) / eveningAvg) * 100;
-        document.getElementById('statMorningDip').textContent = Math.round(Math.max(0, dip)) + '%';
-      } else {
-        document.getElementById('statMorningDip').textContent = '--%';
-      }
     }
 
     function updateProfileBadge() {
