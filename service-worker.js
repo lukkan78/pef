@@ -1,20 +1,48 @@
+const CACHE_NAME = 'pef-dagbok-v2';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './assets/icon-192.png',
+  './assets/icon-512.png'
+];
 
-self.addEventListener("install", e => {
+self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open("pef-cache").then(cache => {
-      return cache.addAll([
-        "pef_logg.html",
-        "manifest.json",
-        "ikon512.png"
-      ]);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("fetch", e => {
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
+    caches.match(e.request).then((cached) => {
+      const fetchPromise = fetch(e.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, clone);
+          });
+        }
+        return response;
+      }).catch(() => cached);
+
+      return cached || fetchPromise;
     })
   );
 });
