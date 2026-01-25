@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -724,6 +725,158 @@
       }
     }
 
+    /* AI Insights */
+    .insights-card {
+      margin-top: 16px;
+    }
+
+    .insight-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+
+    .insight-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .insight-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      width: 28px;
+      text-align: center;
+    }
+
+    .insight-content {
+      flex: 1;
+    }
+
+    .insight-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .insight-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .insight-item.warning {
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning);
+    }
+
+    .insight-item.danger {
+      background: var(--danger-bg);
+      border-left: 3px solid var(--danger);
+    }
+
+    .insight-item.success {
+      background: var(--success-bg);
+      border-left: 3px solid var(--success);
+    }
+
+    .insight-item.info {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    .prediction-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      border: 1px solid var(--primary-light);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .prediction-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .prediction-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .prediction-confidence {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .ai-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .ai-loading .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .trend-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trend-indicator.up {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .trend-indicator.down {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .trend-indicator.stable {
+      background: var(--gray-100);
+      color: var(--text-secondary);
+    }
+
     /* Install prompt */
     .install-banner {
       background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
@@ -954,6 +1107,31 @@
             <div class="stat-box" style="background: var(--warning-bg);">
               <div class="stat-value" id="statYellow" style="color: var(--warning);">0%</div>
               <div class="stat-label" style="color: var(--warning);">Gul zon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Insights Card -->
+        <div class="card insights-card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              Insikter
+              <span class="ai-badge" id="aiBadge" style="display:none;">AI</span>
+            </span>
+          </div>
+          <div id="insightsContainer">
+            <div class="empty-state" style="padding: 20px;">
+              <p>Logga mätningar för att få insikter</p>
+            </div>
+          </div>
+          <div id="predictionContainer" style="display:none;">
+            <div class="prediction-box">
+              <div class="prediction-label">AI-prediktion för imorgon</div>
+              <div class="prediction-value" id="predictionValue">--</div>
+              <div class="prediction-confidence" id="predictionConfidence"></div>
             </div>
           </div>
         </div>
@@ -1446,6 +1624,7 @@
       updateStatistics();
       updateChart();
       updateProfileBadge();
+      updateInsights();
     }
 
     function updateQuickStats() {
@@ -1962,6 +2141,7 @@
 
       if (sectionId === 'sectionStats') {
         updateChart();
+        updateInsights();
       }
     }
 
@@ -1997,6 +2177,260 @@
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    }
+
+    // ============================================
+    // AI Analysis (Pattern Analysis + TensorFlow.js)
+    // ============================================
+
+    let tfModel = null;
+    let isModelTraining = false;
+
+    // Pattern Analysis (Alternativ 1 - fungerar direkt)
+    function analyzePatterns() {
+      const container = document.getElementById('insightsContainer');
+      const insights = [];
+
+      if (measurements.length < 3) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 20px;">
+            <p>Logga minst 3 mätningar för att få insikter</p>
+          </div>
+        `;
+        return;
+      }
+
+      const now = Date.now();
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+
+      const recent = measurements.filter(m => m.ts >= sevenDaysAgo);
+      const previous = measurements.filter(m => m.ts >= fourteenDaysAgo && m.ts < sevenDaysAgo);
+
+      // 1. Trend analysis
+      if (recent.length >= 3) {
+        const recentAvg = recent.reduce((sum, m) => sum + m.pef, 0) / recent.length;
+
+        if (previous.length >= 3) {
+          const prevAvg = previous.reduce((sum, m) => sum + m.pef, 0) / previous.length;
+          const change = ((recentAvg - prevAvg) / prevAvg) * 100;
+
+          if (change <= -10) {
+            insights.push({
+              icon: '📉',
+              title: 'Nedåtgående trend',
+              text: `Dina värden har sjunkit ${Math.abs(Math.round(change))}% jämfört med förra veckan.`,
+              type: 'warning'
+            });
+          } else if (change >= 10) {
+            insights.push({
+              icon: '📈',
+              title: 'Uppåtgående trend',
+              text: `Dina värden har ökat ${Math.round(change)}% jämfört med förra veckan.`,
+              type: 'success'
+            });
+          } else {
+            insights.push({
+              icon: '➡️',
+              title: 'Stabila värden',
+              text: 'Dina värden har varit stabila den senaste veckan.',
+              type: 'info'
+            });
+          }
+        }
+      }
+
+      // 2. Variability analysis (kliniskt viktigt!)
+      if (recent.length >= 4) {
+        const values = recent.map(m => m.pef);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const variability = ((max - min) / mean) * 100;
+
+        if (variability > 20) {
+          insights.push({
+            icon: '⚠️',
+            title: 'Hög variabilitet',
+            text: `${Math.round(variability)}% variation mellan högsta och lägsta värde. >20% kan tyda på dåligt kontrollerad astma.`,
+            type: 'danger'
+          });
+        } else if (variability > 15) {
+          insights.push({
+            icon: '📊',
+            title: 'Måttlig variabilitet',
+            text: `${Math.round(variability)}% variation. Håll koll på utvecklingen.`,
+            type: 'warning'
+          });
+        } else {
+          insights.push({
+            icon: '✓',
+            title: 'Låg variabilitet',
+            text: `Endast ${Math.round(variability)}% variation - bra kontroll!`,
+            type: 'success'
+          });
+        }
+      }
+
+      // 3. Morning dip analysis
+      const morningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 5 && hour < 10;
+      }).slice(-14);
+
+      const eveningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 18 && hour < 23;
+      }).slice(-14);
+
+      if (morningMeasurements.length >= 3 && eveningMeasurements.length >= 3) {
+        const morningAvg = morningMeasurements.reduce((sum, m) => sum + m.pef, 0) / morningMeasurements.length;
+        const eveningAvg = eveningMeasurements.reduce((sum, m) => sum + m.pef, 0) / eveningMeasurements.length;
+        const dip = ((eveningAvg - morningAvg) / eveningAvg) * 100;
+
+        if (dip > 15) {
+          insights.push({
+            icon: '🌅',
+            title: 'Morgondippa',
+            text: `Morgonvärden är ${Math.round(dip)}% lägre än kvällsvärden. Detta kan tyda på nattlig astma.`,
+            type: 'warning'
+          });
+        } else if (dip > 8) {
+          insights.push({
+            icon: '🌅',
+            title: 'Viss morgondippa',
+            text: `Morgonvärden är ${Math.round(dip)}% lägre än kvällsvärden.`,
+            type: 'info'
+          });
+        }
+      }
+
+      // 4. Red zone warnings
+      const recentRed = recent.filter(m => m.zone === 'red');
+      if (recentRed.length >= 2) {
+        insights.push({
+          icon: '🚨',
+          title: 'Flera röda mätningar',
+          text: `${recentRed.length} mätningar i röd zon senaste veckan. Överväg att kontakta vården.`,
+          type: 'danger'
+        });
+      }
+
+      // 5. Good control
+      const allGreen = recent.length >= 5 && recent.every(m => m.zone === 'green');
+      if (allGreen) {
+        insights.push({
+          icon: '🎉',
+          title: 'Utmärkt kontroll',
+          text: 'Alla mätningar senaste veckan i grön zon. Fortsätt så!',
+          type: 'success'
+        });
+      }
+
+      // Render insights
+      if (insights.length === 0) {
+        insights.push({
+          icon: '📊',
+          title: 'Samlar data',
+          text: 'Fortsätt logga för mer detaljerade insikter.',
+          type: 'info'
+        });
+      }
+
+      container.innerHTML = insights.map(i => `
+        <div class="insight-item ${i.type}">
+          <div class="insight-icon">${i.icon}</div>
+          <div class="insight-content">
+            <div class="insight-title">${i.title}</div>
+            <div class="insight-text">${i.text}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // TensorFlow.js Prediction (Alternativ 2 - aktiveras vid 14+ mätningar)
+    async function initTensorFlow() {
+      if (measurements.length < 14 || isModelTraining || tfModel) return;
+
+      const predContainer = document.getElementById('predictionContainer');
+      const aiBadge = document.getElementById('aiBadge');
+
+      try {
+        isModelTraining = true;
+
+        // Prepare data
+        const daily = dailyBuckets();
+        if (daily.length < 7) return;
+
+        // Normalize data
+        const values = daily.map(d => d.best);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
+        const normalized = values.map(v => (v - min) / range);
+
+        // Create sequences (use last 5 days to predict next)
+        const sequenceLength = 5;
+        const xs = [];
+        const ys = [];
+
+        for (let i = 0; i < normalized.length - sequenceLength; i++) {
+          xs.push(normalized.slice(i, i + sequenceLength));
+          ys.push(normalized[i + sequenceLength]);
+        }
+
+        if (xs.length < 3) return;
+
+        // Build model
+        tfModel = tf.sequential();
+        tfModel.add(tf.layers.dense({ units: 16, activation: 'relu', inputShape: [sequenceLength] }));
+        tfModel.add(tf.layers.dense({ units: 8, activation: 'relu' }));
+        tfModel.add(tf.layers.dense({ units: 1 }));
+
+        tfModel.compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError' });
+
+        // Train
+        const xTensor = tf.tensor2d(xs);
+        const yTensor = tf.tensor1d(ys);
+
+        await tfModel.fit(xTensor, yTensor, {
+          epochs: 50,
+          verbose: 0
+        });
+
+        xTensor.dispose();
+        yTensor.dispose();
+
+        // Predict tomorrow
+        const lastSequence = normalized.slice(-sequenceLength);
+        const prediction = tfModel.predict(tf.tensor2d([lastSequence]));
+        const predValue = prediction.dataSync()[0];
+        prediction.dispose();
+
+        // Denormalize
+        const predictedPEF = Math.round(predValue * range + min);
+
+        // Calculate confidence based on model stability
+        const recentValues = values.slice(-7);
+        const recentStd = Math.sqrt(recentValues.reduce((sum, v) => sum + Math.pow(v - recentValues.reduce((a, b) => a + b, 0) / recentValues.length, 2), 0) / recentValues.length);
+        const confidence = Math.max(50, Math.min(95, 100 - (recentStd / 10)));
+
+        // Display prediction
+        document.getElementById('predictionValue').textContent = `${predictedPEF} L/min`;
+        document.getElementById('predictionConfidence').textContent = `Konfidensgrad: ${Math.round(confidence)}% baserat på ${daily.length} dagars data`;
+        predContainer.style.display = 'block';
+        aiBadge.style.display = 'inline-flex';
+
+      } catch (e) {
+        console.log('TensorFlow error:', e);
+      } finally {
+        isModelTraining = false;
+      }
+    }
+
+    function updateInsights() {
+      analyzePatterns();
+      initTensorFlow();
     }
 
     // ============================================
