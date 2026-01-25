@@ -2015,10 +2015,17 @@
         return;
       }
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      try {
+        // Check if jsPDF is loaded
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          showToast('PDF-biblioteket laddas, försök igen om en sekund', 'error');
+          return;
+        }
 
-      let y = 20;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        let y = 20;
 
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
@@ -2125,6 +2132,11 @@
 
       doc.save(`pef-rapport-${new Date().toISOString().slice(0, 10)}.pdf`);
       showToast('PDF-rapport skapad!', 'success');
+
+      } catch (error) {
+        console.error('PDF export error:', error);
+        showToast('Kunde inte skapa PDF. Försök igen.', 'error');
+      }
     }
 
     // ============================================
