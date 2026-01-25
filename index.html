@@ -1275,6 +1275,14 @@
         <input type="number" id="profileHeight" class="form-input" placeholder="t.ex. 175" min="100" max="220">
       </div>
 
+      <div class="form-group">
+        <label class="form-label">Referensalgoritm</label>
+        <select id="profileAlgorithm" class="form-select">
+          <option value="eu">EU-skala (standard i Sverige)</option>
+          <option value="nunn">Nunn & Gregg (1989)</option>
+        </select>
+      </div>
+
       <div class="predicted-box">
         <div class="label">Förväntat PEF-värde</div>
         <div class="value" id="predictedDisplay">-- L/min</div>
@@ -1299,6 +1307,7 @@
       birthYear: null,
       birthMonth: null,
       heightCm: null,
+      algorithm: 'eu',
       predicted: null,
       personalBest: null
     };
@@ -1452,14 +1461,43 @@
       if (!p.birthYear || !p.heightCm || !p.sex) return null;
 
       const age = calculateAge(p.birthYear, p.birthMonth);
-      const height = p.heightCm;
-      const table = EU_TABLE[p.sex];
+      const heightCm = p.heightCm;
+      const algorithm = p.algorithm || 'eu';
 
+      // Use Nunn & Gregg if selected
+      if (algorithm === 'nunn') {
+        return calculateNunnGregg(p.sex, age, heightCm);
+      }
+
+      // Default: EU Table with bilinear interpolation
+      return calculateEUTable(p.sex, age, heightCm);
+    }
+
+    // Nunn & Gregg (1989) formula
+    // Original formulas in L/s, multiply by 60 for L/min
+    function calculateNunnGregg(sex, age, heightCm) {
+      const heightM = heightCm / 100; // Convert to meters
+
+      let pef;
+      if (sex === 'female') {
+        // Women: PEF (L/s) = 5.50×H - 0.030×A - 1.11
+        pef = (5.50 * heightM - 0.030 * age - 1.11) * 60;
+      } else {
+        // Men: PEF (L/s) = 6.14×H - 0.043×A + 0.15
+        pef = (6.14 * heightM - 0.043 * age + 0.15) * 60;
+      }
+
+      return Math.round(Math.max(pef, 100)); // Minimum 100 L/min
+    }
+
+    // EU Table calculation with bilinear interpolation
+    function calculateEUTable(sex, age, heightCm) {
+      const table = EU_TABLE[sex];
       if (!table) return null;
 
       // Clamp values to table range
       const clampedAge = Math.max(table.ages[0], Math.min(table.ages[table.ages.length - 1], age));
-      const clampedHeight = Math.max(table.heights[0], Math.min(table.heights[table.heights.length - 1], height));
+      const clampedHeight = Math.max(table.heights[0], Math.min(table.heights[table.heights.length - 1], heightCm));
 
       // Find surrounding indices for age
       let ageIdx0 = 0, ageIdx1 = 0;
@@ -1927,6 +1965,7 @@
       document.getElementById('profileBirthYear').value = profile.birthYear || '';
       document.getElementById('profileBirthMonth').value = profile.birthMonth || '';
       document.getElementById('profileHeight').value = profile.heightCm || '';
+      document.getElementById('profileAlgorithm').value = profile.algorithm || 'eu';
 
       document.querySelectorAll('.sex-option').forEach(opt => {
         opt.classList.toggle('active', opt.dataset.sex === (profile.sex || 'male'));
@@ -1945,9 +1984,10 @@
       const birthYear = parseInt(document.getElementById('profileBirthYear').value);
       const birthMonth = parseInt(document.getElementById('profileBirthMonth').value);
       const height = parseInt(document.getElementById('profileHeight').value);
+      const algorithm = document.getElementById('profileAlgorithm').value || 'eu';
 
       if (birthYear && height) {
-        const tempProfile = { sex, birthYear, birthMonth, heightCm: height };
+        const tempProfile = { sex, birthYear, birthMonth, heightCm: height, algorithm };
         const predicted = calculatePredictedPEF(tempProfile);
         document.getElementById('predictedDisplay').textContent = predicted ? `${predicted} L/min` : '-- L/min';
       } else {
@@ -1961,6 +2001,7 @@
       profile.birthYear = parseInt(document.getElementById('profileBirthYear').value) || null;
       profile.birthMonth = parseInt(document.getElementById('profileBirthMonth').value) || null;
       profile.heightCm = parseInt(document.getElementById('profileHeight').value) || null;
+      profile.algorithm = document.getElementById('profileAlgorithm').value || 'eu';
       profile.predicted = calculatePredictedPEF();
 
       measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
@@ -2461,7 +2502,7 @@
       e.target.select();
     });
 
-    ['profileBirthYear', 'profileBirthMonth', 'profileHeight'].forEach(id => {
+    ['profileBirthYear', 'profileBirthMonth', 'profileHeight', 'profileAlgorithm'].forEach(id => {
       document.getElementById(id).addEventListener('change', updatePredictedDisplay);
     });
 
