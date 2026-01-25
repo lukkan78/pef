@@ -2505,9 +2505,9 @@
       `).join('');
     }
 
-    // TensorFlow.js Prediction (Alternativ 2 - aktiveras vid 14+ mätningar)
+    // TensorFlow.js Prediction (Alternativ 2 - aktiveras vid 7+ mätningar över 5+ dagar)
     async function initTensorFlow() {
-      if (measurements.length < 14 || isModelTraining || tfModel) return;
+      if (measurements.length < 7 || isModelTraining || tfModel) return;
 
       const predContainer = document.getElementById('predictionContainer');
       const aiBadge = document.getElementById('aiBadge');
@@ -2517,7 +2517,7 @@
 
         // Prepare data
         const daily = dailyBuckets();
-        if (daily.length < 7) return;
+        if (daily.length < 5) return;
 
         // Normalize data
         const values = daily.map(d => d.best);
@@ -2526,8 +2526,8 @@
         const range = max - min || 1;
         const normalized = values.map(v => (v - min) / range);
 
-        // Create sequences (use last 5 days to predict next)
-        const sequenceLength = 5;
+        // Create sequences (use last 3 days to predict next)
+        const sequenceLength = Math.min(3, daily.length - 2);
         const xs = [];
         const ys = [];
 
@@ -2536,7 +2536,7 @@
           ys.push(normalized[i + sequenceLength]);
         }
 
-        if (xs.length < 3) return;
+        if (xs.length < 2) return;
 
         // Build model
         tfModel = tf.sequential();
