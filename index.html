@@ -1613,7 +1613,7 @@
 
         <div class="form-group">
           <label class="form-label">Startdatum</label>
-          <input type="date" id="profileMedStartDate" class="form-input">
+          <input type="date" id="profileMedStartDate" class="form-input" style="max-width: 180px;">
         </div>
 
         <div id="medicationHistory" class="medication-history"></div>
@@ -2660,12 +2660,37 @@
               <span class="med-name">${name} ${med.strength || ''}</span>
               <span class="med-date">från ${med.startDate || 'okänt datum'}</span>
             </div>
-            ${isCurrent ? '<span class="med-current">Aktuell</span>' : ''}
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${isCurrent ? '<span class="med-current">Aktuell</span>' : ''}
+              <button class="btn-icon" onclick="deleteMedication(${idx})" title="Ta bort" style="color: var(--danger); padding: 4px;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
           </div>
         `;
       }).join('');
 
       container.innerHTML = '<label class="form-label" style="margin-top: 12px;">Medicinhistorik</label>' + html;
+    }
+
+    function deleteMedication(idx) {
+      if (!confirm('Ta bort denna medicinering från historiken?')) return;
+
+      const deletedMed = profile.medicationHistory[idx];
+      profile.medicationHistory.splice(idx, 1);
+
+      // If deleted was current, clear current medication
+      if (profile.currentMedication &&
+          deletedMed.inhaler === profile.currentMedication.inhaler &&
+          deletedMed.startDate === profile.currentMedication.startDate) {
+        profile.currentMedication = profile.medicationHistory.length > 0 ? profile.medicationHistory[0] : null;
+      }
+
+      saveData();
+      updateMedicationHistory();
+      showToast('Medicinering borttagen', 'success');
     }
 
     function getInhalerName(value) {

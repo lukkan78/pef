@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pef-dagbok-v8';
+const CACHE_NAME = 'pef-dagbok-v9';
 const ASSETS = [
   './',
   './index.html',
