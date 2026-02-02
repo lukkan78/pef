@@ -269,6 +269,73 @@
     [data-theme="dark"] .zone-text.yellow { color: #fbbf24; }
     [data-theme="dark"] .zone-text.red { color: #f87171; }
 
+    /* Symptom Buttons */
+    .symptom-section {
+      margin-bottom: 16px;
+    }
+
+    .symptom-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .symptom-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .symptom-btn {
+      flex: 1;
+      min-width: calc(50% - 4px);
+      padding: 10px 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .symptom-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .symptom-btn.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+    }
+
+    .symptom-btn[data-symptom="frisk"].active {
+      border-color: var(--success);
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .symptom-btn[data-symptom="forkyld"].active {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .symptom-btn[data-symptom="hosta"].active {
+      border-color: var(--warning);
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .symptom-btn[data-symptom="allergi"].active {
+      border-color: #ec4899;
+      background: rgba(236, 72, 153, 0.1);
+      color: #ec4899;
+    }
+
     /* Buttons */
     .btn {
       display: inline-flex;
@@ -1014,6 +1081,53 @@
       color: var(--primary);
     }
 
+    /* Medication section */
+    .medication-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .medication-history {
+      margin-top: 12px;
+    }
+
+    .med-history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .med-history-item .med-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .med-history-item .med-date {
+      color: var(--text-secondary);
+    }
+
+    .med-history-item .med-current {
+      background: var(--success-bg);
+      color: var(--success);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
     /* Profile info display */
     .profile-info {
       background: var(--gray-50);
@@ -1130,6 +1244,24 @@
           </div>
 
           <div class="zone-text neutral" id="zoneText">Ange ditt PEF-värde</div>
+
+          <div class="symptom-section">
+            <label class="symptom-label">Hur mår du?</label>
+            <div class="symptom-buttons">
+              <button type="button" class="symptom-btn active" data-symptom="frisk" onclick="selectSymptom('frisk')">
+                ✓ Frisk
+              </button>
+              <button type="button" class="symptom-btn" data-symptom="forkyld" onclick="selectSymptom('forkyld')">
+                🤧 Förkyld
+              </button>
+              <button type="button" class="symptom-btn" data-symptom="hosta" onclick="selectSymptom('hosta')">
+                😷 Hosta
+              </button>
+              <button type="button" class="symptom-btn" data-symptom="allergi" onclick="selectSymptom('allergi')">
+                🌸 Allergi
+              </button>
+            </div>
+          </div>
 
           <button class="btn btn-primary" id="saveBtn" onclick="saveMeasurement()">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
@@ -1437,6 +1569,56 @@
         <div class="value" id="predictedDisplay">-- L/min</div>
       </div>
 
+      <div class="medication-section">
+        <h3 class="section-subtitle">Medicinering</h3>
+
+        <div class="form-group">
+          <label class="form-label">Inhalator</label>
+          <select id="profileInhaler" class="form-select">
+            <option value="">Välj inhalator...</option>
+            <optgroup label="Kombinationspreparat">
+              <option value="symbicort">Symbicort (budesonid/formoterol)</option>
+              <option value="innovair">Innovair (beklometason/formoterol)</option>
+              <option value="seretide">Seretide (flutikason/salmeterol)</option>
+              <option value="bufomix">Bufomix (budesonid/formoterol)</option>
+              <option value="relvar">Relvar (flutikason/vilanterol)</option>
+              <option value="duoresp">DuoResp (budesonid/formoterol)</option>
+            </optgroup>
+            <optgroup label="Kortikosteroider">
+              <option value="pulmicort">Pulmicort (budesonid)</option>
+              <option value="flutide">Flutide (flutikason)</option>
+              <option value="giona">Giona (beklometason)</option>
+            </optgroup>
+            <optgroup label="Luftrörsvidgande">
+              <option value="ventoline">Ventoline (salbutamol)</option>
+              <option value="bricanyl">Bricanyl (terbutalin)</option>
+              <option value="atrovent">Atrovent (ipratropium)</option>
+              <option value="spiriva">Spiriva (tiotropium)</option>
+            </optgroup>
+            <option value="other">Annan...</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="customInhalerGroup" style="display: none;">
+          <label class="form-label">Ange inhalator</label>
+          <input type="text" id="profileInhalerCustom" class="form-input" placeholder="T.ex. Airflusal">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Styrka</label>
+          <select id="profileInhalerStrength" class="form-select">
+            <option value="">Välj styrka...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Startdatum</label>
+          <input type="date" id="profileMedStartDate" class="form-input">
+        </div>
+
+        <div id="medicationHistory" class="medication-history"></div>
+      </div>
+
       <button class="btn btn-primary" onclick="saveProfile()" style="margin-top: 16px;">Spara profil</button>
     </div>
   </div>
@@ -1458,13 +1640,51 @@
       heightCm: null,
       algorithm: 'eu',
       predicted: null,
-      personalBest: null
+      personalBest: null,
+      currentMedication: null,
+      medicationHistory: []
     };
     let chart = null;
     let refMode = 'personal';
     let deferredPrompt = null;
     let darkMode = false;
     let showAllHistory = false;
+    let selectedSymptom = 'frisk';
+
+    function selectSymptom(symptom) {
+      selectedSymptom = symptom;
+      document.querySelectorAll('.symptom-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.symptom === symptom);
+      });
+    }
+
+    function getSymptomEmoji(symptom) {
+      const emojis = {
+        'frisk': '',
+        'forkyld': '🤧',
+        'hosta': '😷',
+        'allergi': '🌸'
+      };
+      return emojis[symptom] || '';
+    }
+
+    function getMostCommonSymptom(measurements) {
+      const counts = {};
+      measurements.forEach(m => {
+        if (m.symptom && m.symptom !== 'frisk') {
+          counts[m.symptom] = (counts[m.symptom] || 0) + 1;
+        }
+      });
+      let maxSymptom = null;
+      let maxCount = 0;
+      for (const [symptom, count] of Object.entries(counts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          maxSymptom = symptom;
+        }
+      }
+      return maxSymptom;
+    }
 
     function loadData() {
       const savedMeas = localStorage.getItem('pef_measurements');
@@ -1756,7 +1976,8 @@
         id: Date.now(),
         ts: Date.now(),
         pef: value,
-        zone: zone
+        zone: zone,
+        symptom: selectedSymptom
       };
 
       measurements.push(measurement);
@@ -1769,6 +1990,10 @@
       saveData();
       input.value = '';
       updateZoneIndicator(null);
+
+      // Reset symptom to "frisk"
+      selectSymptom('frisk');
+
       updateUI();
       showToast('Mätning sparad!', 'success');
 
@@ -1865,12 +2090,13 @@
         const date = new Date(m.ts);
         const dateStr = date.toLocaleDateString('sv-SE');
         const timeStr = date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+        const symptomEmoji = getSymptomEmoji(m.symptom);
 
         return `
           <div class="history-item">
             <div class="history-zone ${m.zone}"></div>
             <div class="history-content">
-              <div class="history-value">${m.pef} L/min</div>
+              <div class="history-value">${m.pef} L/min ${symptomEmoji}</div>
               <div class="history-time">${dateStr} kl ${timeStr}</div>
             </div>
             <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})" title="Ta bort">
@@ -2345,12 +2571,120 @@
         opt.classList.toggle('active', opt.dataset.sex === (profile.sex || 'male'));
       });
 
+      // Medication fields
+      if (profile.currentMedication) {
+        document.getElementById('profileInhaler').value = profile.currentMedication.inhaler || '';
+        updateInhalerStrengths();
+        document.getElementById('profileInhalerStrength').value = profile.currentMedication.strength || '';
+        document.getElementById('profileMedStartDate').value = profile.currentMedication.startDate || '';
+        if (profile.currentMedication.inhaler === 'other') {
+          document.getElementById('customInhalerGroup').style.display = 'block';
+          document.getElementById('profileInhalerCustom').value = profile.currentMedication.customName || '';
+        }
+      } else {
+        document.getElementById('profileInhaler').value = '';
+        document.getElementById('profileInhalerStrength').innerHTML = '<option value="">Välj styrka...</option>';
+        document.getElementById('profileMedStartDate').value = '';
+      }
+
+      updateMedicationHistory();
       updatePredictedDisplay();
       document.getElementById('profileModal').classList.add('active');
     }
 
     function hideProfileModal() {
       document.getElementById('profileModal').classList.remove('active');
+    }
+
+    const inhalerStrengths = {
+      'symbicort': ['80/4.5 µg', '160/4.5 µg', '320/9 µg'],
+      'innovair': ['100/6 µg', '200/6 µg'],
+      'seretide': ['50/100 µg', '50/250 µg', '50/500 µg'],
+      'bufomix': ['160/4.5 µg', '320/9 µg'],
+      'relvar': ['92/22 µg', '184/22 µg'],
+      'duoresp': ['160/4.5 µg', '320/9 µg'],
+      'pulmicort': ['100 µg', '200 µg', '400 µg'],
+      'flutide': ['50 µg', '125 µg', '250 µg'],
+      'giona': ['100 µg', '250 µg'],
+      'ventoline': ['100 µg/dos'],
+      'bricanyl': ['250 µg', '500 µg'],
+      'atrovent': ['20 µg', '40 µg'],
+      'spiriva': ['18 µg', '2.5 µg']
+    };
+
+    function updateInhalerStrengths() {
+      const inhaler = document.getElementById('profileInhaler').value;
+      const strengthSelect = document.getElementById('profileInhalerStrength');
+      const customGroup = document.getElementById('customInhalerGroup');
+
+      // Show/hide custom input
+      customGroup.style.display = inhaler === 'other' ? 'block' : 'none';
+
+      // Update strengths
+      strengthSelect.innerHTML = '<option value="">Välj styrka...</option>';
+
+      if (inhaler && inhaler !== 'other' && inhalerStrengths[inhaler]) {
+        inhalerStrengths[inhaler].forEach(strength => {
+          const option = document.createElement('option');
+          option.value = strength;
+          option.textContent = strength;
+          strengthSelect.appendChild(option);
+        });
+      } else if (inhaler === 'other') {
+        // Allow free text for custom
+        strengthSelect.innerHTML = '<option value="">Ange styrka...</option>';
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = 'Ange egen styrka';
+        strengthSelect.appendChild(customOption);
+      }
+    }
+
+    function updateMedicationHistory() {
+      const container = document.getElementById('medicationHistory');
+      if (!profile.medicationHistory || profile.medicationHistory.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const html = profile.medicationHistory.map((med, idx) => {
+        const isCurrent = profile.currentMedication &&
+          med.inhaler === profile.currentMedication.inhaler &&
+          med.startDate === profile.currentMedication.startDate;
+
+        const name = med.inhaler === 'other' ? med.customName : getInhalerName(med.inhaler);
+
+        return `
+          <div class="med-history-item">
+            <div>
+              <span class="med-name">${name} ${med.strength || ''}</span>
+              <span class="med-date">från ${med.startDate || 'okänt datum'}</span>
+            </div>
+            ${isCurrent ? '<span class="med-current">Aktuell</span>' : ''}
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = '<label class="form-label" style="margin-top: 12px;">Medicinhistorik</label>' + html;
+    }
+
+    function getInhalerName(value) {
+      const names = {
+        'symbicort': 'Symbicort',
+        'innovair': 'Innovair',
+        'seretide': 'Seretide',
+        'bufomix': 'Bufomix',
+        'relvar': 'Relvar',
+        'duoresp': 'DuoResp',
+        'pulmicort': 'Pulmicort',
+        'flutide': 'Flutide',
+        'giona': 'Giona',
+        'ventoline': 'Ventoline',
+        'bricanyl': 'Bricanyl',
+        'atrovent': 'Atrovent',
+        'spiriva': 'Spiriva'
+      };
+      return names[value] || value;
     }
 
     function updatePredictedDisplay() {
@@ -2377,6 +2711,49 @@
       profile.heightCm = parseInt(document.getElementById('profileHeight').value) || null;
       profile.algorithm = document.getElementById('profileAlgorithm').value || 'eu';
       profile.predicted = calculatePredictedPEF();
+
+      // Save medication
+      const inhaler = document.getElementById('profileInhaler').value;
+      const strength = document.getElementById('profileInhalerStrength').value;
+      const startDate = document.getElementById('profileMedStartDate').value;
+      const customName = document.getElementById('profileInhalerCustom').value.trim();
+
+      if (inhaler) {
+        const newMedication = {
+          inhaler,
+          strength,
+          startDate,
+          customName: inhaler === 'other' ? customName : null
+        };
+
+        // Check if medication changed
+        const currentMed = profile.currentMedication;
+        const medChanged = !currentMed ||
+          currentMed.inhaler !== inhaler ||
+          currentMed.strength !== strength ||
+          currentMed.startDate !== startDate;
+
+        if (medChanged) {
+          profile.currentMedication = newMedication;
+
+          // Add to history if not already there
+          if (!profile.medicationHistory) profile.medicationHistory = [];
+
+          const exists = profile.medicationHistory.some(m =>
+            m.inhaler === inhaler &&
+            m.strength === strength &&
+            m.startDate === startDate
+          );
+
+          if (!exists && startDate) {
+            profile.medicationHistory.push(newMedication);
+            // Sort by date descending
+            profile.medicationHistory.sort((a, b) =>
+              new Date(b.startDate || 0) - new Date(a.startDate || 0)
+            );
+          }
+        }
+      }
 
       measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
 
@@ -2887,7 +3264,74 @@
         });
       }
 
-      // 5. Good control
+      // 5. Symptom analysis
+      const symptomsRecent = recent.filter(m => m.symptom && m.symptom !== 'frisk');
+      const healthyRecent = recent.filter(m => !m.symptom || m.symptom === 'frisk');
+
+      if (symptomsRecent.length >= 2 && healthyRecent.length >= 2) {
+        const symptomAvg = symptomsRecent.reduce((sum, m) => sum + m.pef, 0) / symptomsRecent.length;
+        const healthyAvg = healthyRecent.reduce((sum, m) => sum + m.pef, 0) / healthyRecent.length;
+        const drop = ((healthyAvg - symptomAvg) / healthyAvg) * 100;
+
+        if (drop > 5) {
+          const mainSymptom = getMostCommonSymptom(symptomsRecent);
+          const symptomName = {
+            'forkyld': 'förkylning',
+            'hosta': 'hosta',
+            'allergi': 'allergi'
+          }[mainSymptom] || 'symptom';
+
+          insights.push({
+            icon: '🤧',
+            title: 'Symptompåverkan',
+            text: `Vid ${symptomName} sjunker ditt PEF med ca ${Math.round(drop)}% jämfört med friska dagar.`,
+            type: 'info'
+          });
+        }
+      }
+
+      // 6. Medication analysis
+      if (profile.medicationHistory && profile.medicationHistory.length >= 2) {
+        const sortedMeds = [...profile.medicationHistory].sort((a, b) =>
+          new Date(a.startDate || 0) - new Date(b.startDate || 0)
+        );
+
+        const prevMed = sortedMeds[sortedMeds.length - 2];
+        const currentMed = sortedMeds[sortedMeds.length - 1];
+
+        if (prevMed.startDate && currentMed.startDate) {
+          const changeDate = new Date(currentMed.startDate);
+          const beforeChange = measurements.filter(m => {
+            const mDate = new Date(m.ts);
+            return mDate < changeDate && mDate > new Date(changeDate - 30 * 24 * 60 * 60 * 1000);
+          });
+          const afterChange = measurements.filter(m => {
+            const mDate = new Date(m.ts);
+            return mDate >= changeDate;
+          });
+
+          if (beforeChange.length >= 3 && afterChange.length >= 3) {
+            const beforeAvg = beforeChange.reduce((sum, m) => sum + m.pef, 0) / beforeChange.length;
+            const afterAvg = afterChange.reduce((sum, m) => sum + m.pef, 0) / afterChange.length;
+            const change = ((afterAvg - beforeAvg) / beforeAvg) * 100;
+
+            const medName = currentMed.inhaler === 'other' ? currentMed.customName : getInhalerName(currentMed.inhaler);
+
+            if (Math.abs(change) > 5) {
+              insights.push({
+                icon: change > 0 ? '💊' : '⚠️',
+                title: change > 0 ? 'Positiv medicineffekt' : 'Medicinbyte',
+                text: change > 0
+                  ? `Sedan byte till ${medName} har snittvärdet ökat med ${Math.round(change)}%.`
+                  : `Sedan byte till ${medName} har snittvärdet sjunkit ${Math.abs(Math.round(change))}%. Följ upp med din läkare.`,
+                type: change > 0 ? 'success' : 'warning'
+              });
+            }
+          }
+        }
+      }
+
+      // 7. Good control
       const allGreen = recent.length >= 5 && recent.every(m => m.zone === 'green');
       if (allGreen) {
         insights.push({
@@ -3023,6 +3467,8 @@
     ['profileBirthYear', 'profileBirthMonth', 'profileHeight', 'profileAlgorithm'].forEach(id => {
       document.getElementById(id).addEventListener('change', updatePredictedDisplay);
     });
+
+    document.getElementById('profileInhaler').addEventListener('change', updateInhalerStrengths);
 
     document.getElementById('profileModal').addEventListener('click', (e) => {
       if (e.target.classList.contains('modal-overlay')) hideProfileModal();
