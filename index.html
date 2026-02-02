@@ -99,14 +99,26 @@
       max-width: 500px;
       margin: 0 auto;
       padding: 16px;
+      padding-top: 130px; /* Plats för fixed header */
     }
 
     /* Header */
     header {
       text-align: center;
-      padding: 24px 16px 16px;
+      padding: 16px 16px 12px;
+      padding-top: calc(16px + env(safe-area-inset-top));
       color: white;
-      position: relative;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 100;
+      transition: background 0.3s;
+    }
+
+    [data-theme="dark"] header {
+      background: linear-gradient(135deg, #1e1e2e 0%, #2d1b4e 100%);
     }
 
     header h1 {
