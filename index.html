@@ -1087,6 +1087,13 @@
       <button class="btn" onclick="installApp()">Installera</button>
     </div>
 
+    <!-- Update Banner -->
+    <div class="install-banner" id="updateBanner" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+      <h3>🔄 Ny version tillgänglig!</h3>
+      <p>En uppdatering finns tillgänglig med nya funktioner och förbättringar.</p>
+      <button class="btn" onclick="applyUpdate()" style="background: white; color: #2563eb;">Uppdatera nu</button>
+    </div>
+
     <!-- Main Sections (controlled by nav) -->
     <main id="mainContent">
       <!-- Logga Section -->
@@ -2597,8 +2604,39 @@
       });
     }
 
+    // Service Worker med uppdateringsdetektering
+    let newWorker = null;
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        // Kolla efter uppdateringar direkt vid start
+        reg.update();
+
+        // Lyssna på nya versioner
+        reg.addEventListener('updatefound', () => {
+          newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Ny version installerad - visa banner
+              document.getElementById('updateBanner').classList.add('show');
+            }
+          });
+        });
+      }).catch(() => {});
+
+      // När ny service worker tar över, ladda om sidan
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+
+    function applyUpdate() {
+      if (newWorker) {
+        newWorker.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        // Fallback: force reload
+        window.location.reload(true);
+      }
     }
 
     // ============================================

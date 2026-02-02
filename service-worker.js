@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pef-dagbok-v3';
+const CACHE_NAME = 'pef-dagbok-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,13 @@ self.addEventListener('install', (e) => {
       return cache.addAll(ASSETS);
     })
   );
-  self.skipWaiting();
+});
+
+// Lyssna på meddelande från appen för att aktivera ny version
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (e) => {
