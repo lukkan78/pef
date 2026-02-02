@@ -2061,11 +2061,11 @@
         .sort((a, b) => a.day.localeCompare(b.day));
     }
 
-    function rollingAverage(data, days) {
+    function rollingAverage(data, days, valueKey = 'best') {
       return data.map((item, idx) => {
         const start = Math.max(0, idx - days + 1);
         const window = data.slice(start, idx + 1);
-        const avg = window.reduce((sum, d) => sum + d.best, 0) / window.length;
+        const avg = window.reduce((sum, d) => sum + d[valueKey], 0) / window.length;
         return { day: item.day, value: Math.round(avg) };
       });
     }
@@ -2082,6 +2082,46 @@
 
       const textColor = darkMode ? '#e5e7eb' : '#374151';
       const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+
+      // Bestäm referensvärde baserat på läge
+      let reference = null;
+      let missingRef = false;
+
+      if (refMode === 'predicted') {
+        reference = profile.predicted;
+        if (!reference) missingRef = true;
+      } else {
+        reference = profile.personalBest;
+        if (!reference) missingRef = true;
+      }
+
+      // Fallback om referens saknas
+      if (missingRef || !reference || reference <= 0) {
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: refMode === 'predicted'
+                  ? 'Fyll i profil för förväntat värde'
+                  : 'Logga mätningar för personbästa',
+                color: textColor,
+                font: { size: 14 }
+              }
+            },
+            scales: {
+              x: { display: false },
+              y: { display: false }
+            }
+          }
+        });
+        return;
+      }
 
       if (daily.length === 0) {
         chart = new Chart(ctx, {
@@ -2103,20 +2143,30 @@
       }
 
       const last30 = daily.slice(-30);
-      const r7 = rollingAverage(last30, 7);
+
+      // Konvertera till procent
+      const last30WithPercent = last30.map(d => ({
+        ...d,
+        percent: Math.round((d.best / reference) * 100)
+      }));
+
+      // Beräkna 7-dagars medel på procentvärden
+      const r7 = rollingAverage(last30WithPercent, 7, 'percent');
 
       const labels = last30.map(d => {
         const date = new Date(d.day);
         return date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
       });
 
-      const reference = refMode === 'predicted' && profile.predicted
-        ? profile.predicted
-        : (profile.personalBest || profile.predicted || 500);
+      // Y-axel för procent (dynamisk med marginal, min 0, max minst 120%)
+      const maxPercent = Math.max(...last30WithPercent.map(d => d.percent), 100);
+      const maxY = Math.round(Math.max(maxPercent * 1.1, 120));
 
-      const greenLine = Math.round(reference * 0.8);
-      const yellowLine = Math.round(reference * 0.5);
-      const maxY = Math.round(Math.max(...last30.map(d => d.best), reference) * 1.1);
+      // Zonlinjer i procent
+      const greenLine = 80;  // 80% = grön zon
+      const yellowLine = 50; // 50% = gul zon
+
+      const refLabel = refMode === 'predicted' ? 'förväntat' : 'personbästa';
 
       chart = new Chart(ctx, {
         type: 'line',
@@ -2124,8 +2174,8 @@
           labels,
           datasets: [
             {
-              label: 'Bästa/dag',
-              data: last30.map(d => d.best),
+              label: `% av ${refLabel}`,
+              data: last30WithPercent.map(d => d.percent),
               borderColor: '#6366f1',
               backgroundColor: darkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)',
               borderWidth: 2,
@@ -2157,7 +2207,12 @@
               min: 0,
               max: maxY,
               grid: { color: gridColor },
-              ticks: { color: textColor }
+              ticks: {
+                color: textColor,
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
             },
             x: {
               grid: { display: false },
@@ -2175,7 +2230,18 @@
               titleColor: darkMode ? '#111' : '#fff',
               bodyColor: darkMode ? '#111' : '#fff',
               padding: 12,
-              cornerRadius: 8
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const percent = context.raw;
+                  const absolute = last30[idx]?.best || 0;
+                  if (context.datasetIndex === 0) {
+                    return `${percent}% (${absolute} L/min)`;
+                  }
+                  return `${percent}%`;
+                }
+              }
             }
           }
         },
@@ -2187,12 +2253,15 @@
 
             const y = scales.y;
 
+            // Grön zon: >= 80%
             ctx.fillStyle = darkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)';
             ctx.fillRect(chartArea.left, y.getPixelForValue(maxY), chartArea.right - chartArea.left, y.getPixelForValue(greenLine) - y.getPixelForValue(maxY));
 
+            // Gul zon: 50-79%
             ctx.fillStyle = darkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)';
             ctx.fillRect(chartArea.left, y.getPixelForValue(greenLine), chartArea.right - chartArea.left, y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine));
 
+            // Röd zon: < 50%
             ctx.fillStyle = darkMode ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)';
             ctx.fillRect(chartArea.left, y.getPixelForValue(yellowLine), chartArea.right - chartArea.left, y.getPixelForValue(0) - y.getPixelForValue(yellowLine));
           }
