@@ -1353,6 +1353,21 @@
             </div>
           </div>
 
+          <div class="stats-grid" style="margin-top: 8px;">
+            <div class="stat-box">
+              <div class="stat-value" id="statAvgPctPredicted">--%</div>
+              <div class="stat-label">Snitt % av förväntat</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="statAvgPctBest">--%</div>
+              <div class="stat-label">Snitt % av personbästa</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="statLowPct">--%</div>
+              <div class="stat-label">Lägsta %</div>
+            </div>
+          </div>
+
           <div class="stat-box" style="margin-top: 8px; cursor: pointer;" onclick="toggleVariabilityDetails()">
             <div class="stat-value" id="statVariability">--%</div>
             <div class="stat-label">Dygnsvariabilitet <span style="font-size: 10px; opacity: 0.7;">(tryck för detaljer)</span></div>
@@ -2202,6 +2217,9 @@
         document.getElementById('stat30Count').textContent = '0';
         document.getElementById('statGreen').textContent = '0%';
         document.getElementById('statYellow').textContent = '0%';
+        document.getElementById('statAvgPctPredicted').textContent = '--%';
+        document.getElementById('statAvgPctBest').textContent = '--%';
+        document.getElementById('statLowPct').textContent = '--%';
         document.getElementById('statVariability').textContent = '--%';
         return;
       }
@@ -2222,6 +2240,25 @@
 
       document.getElementById('statGreen').textContent = Math.round(100 * greenCount / recent.length) + '%';
       document.getElementById('statYellow').textContent = Math.round(100 * yellowCount / recent.length) + '%';
+
+      // Procent-statistik
+      const reference = profile.predicted || profile.personalBest;
+      if (reference && reference > 0) {
+        const avgPctPredicted = Math.round((avg / reference) * 100);
+        const lowPctPredicted = Math.round((low / reference) * 100);
+        document.getElementById('statAvgPctPredicted').textContent = avgPctPredicted + '%';
+        document.getElementById('statLowPct').textContent = lowPctPredicted + '%';
+      } else {
+        document.getElementById('statAvgPctPredicted').textContent = '--%';
+        document.getElementById('statLowPct').textContent = '--%';
+      }
+
+      if (profile.personalBest && profile.personalBest > 0) {
+        const avgPctBest = Math.round((avg / profile.personalBest) * 100);
+        document.getElementById('statAvgPctBest').textContent = avgPctBest + '%';
+      } else {
+        document.getElementById('statAvgPctBest').textContent = '--%';
+      }
 
       // Dygnsvariabilitet: kliniskt korrekt beräkning (morgon vs kväll)
       const variability = calculateDailyVariability(recent);
