@@ -1288,6 +1288,30 @@
             </button>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Backup</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Säkerhetskopiera alla mätvärden och inställningar till en JSON-fil som du kan återställa senare.
+          </p>
+          <div class="export-buttons">
+            <button class="btn btn-secondary" onclick="exportBackup()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              Exportera backup
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('importBackupInput').click()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Importera backup
+            </button>
+            <input type="file" id="importBackupInput" accept=".json" style="display: none;" onchange="importBackup(event)">
+          </div>
+        </div>
       </section>
     </main>
 
@@ -2388,6 +2412,83 @@
       URL.revokeObjectURL(url);
 
       showToast('CSV exporterad!', 'success');
+    }
+
+    function exportBackup() {
+      const backup = {
+        version: 1,
+        exportDate: new Date().toISOString(),
+        profile: profile,
+        measurements: measurements
+      };
+
+      const json = JSON.stringify(backup, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pef-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast('Backup exporterad!', 'success');
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const backup = JSON.parse(e.target.result);
+
+          // Validera backup-strukturen
+          if (!backup.measurements || !Array.isArray(backup.measurements)) {
+            showToast('Ogiltig backup-fil', 'error');
+            return;
+          }
+
+          // Bekräfta innan import
+          const count = backup.measurements.length;
+          const existingCount = measurements.length;
+
+          let message = `Importera ${count} mätningar`;
+          if (existingCount > 0) {
+            message += `?\n\nDu har ${existingCount} befintliga mätningar. Välj:\n• OK = Slå ihop (behåll båda)\n• Avbryt för att avbryta`;
+          }
+
+          if (!confirm(message)) {
+            event.target.value = '';
+            return;
+          }
+
+          // Importera profil om den finns
+          if (backup.profile) {
+            profile = { ...profile, ...backup.profile };
+            localStorage.setItem('pef_profile', JSON.stringify(profile));
+          }
+
+          // Slå ihop mätningar (undvik dubbletter baserat på timestamp)
+          const existingTimestamps = new Set(measurements.map(m => m.ts));
+          const newMeasurements = backup.measurements.filter(m => !existingTimestamps.has(m.ts));
+
+          measurements = [...measurements, ...newMeasurements].sort((a, b) => b.ts - a.ts);
+          localStorage.setItem('pef_measurements', JSON.stringify(measurements));
+
+          updateUI();
+          showToast(`${newMeasurements.length} nya mätningar importerade!`, 'success');
+
+        } catch (error) {
+          console.error('Import error:', error);
+          showToast('Kunde inte läsa backup-filen', 'error');
+        }
+
+        event.target.value = '';
+      };
+
+      reader.readAsText(file);
     }
 
     function exportPDF() {
