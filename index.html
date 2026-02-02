@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#6366f1">
+  <meta name="theme-color" content="#6366f1" id="themeColor">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.webmanifest">
@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -42,18 +43,48 @@
       --gray-700: #374151;
       --gray-800: #1f2937;
       --gray-900: #111827;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-bg: white;
+      --text-primary: var(--gray-800);
+      --text-secondary: var(--gray-500);
+      --border-color: var(--gray-200);
+      --input-bg: white;
       --radius: 16px;
       --radius-sm: 12px;
       --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
       --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
 
+    /* Dark Mode */
+    [data-theme="dark"] {
+      --gray-50: #1f2937;
+      --gray-100: #374151;
+      --gray-200: #4b5563;
+      --gray-300: #6b7280;
+      --gray-400: #9ca3af;
+      --gray-500: #d1d5db;
+      --gray-600: #e5e7eb;
+      --gray-700: #f3f4f6;
+      --gray-800: #f9fafb;
+      --gray-900: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      --card-bg: #1f2937;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --border-color: #374151;
+      --input-bg: #374151;
+      --success-bg: rgba(16, 185, 129, 0.2);
+      --warning-bg: rgba(245, 158, 11, 0.2);
+      --danger-bg: rgba(239, 68, 68, 0.2);
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--bg-gradient);
       min-height: 100vh;
-      color: var(--gray-800);
+      color: var(--text-primary);
       padding-bottom: 100px;
+      transition: background 0.3s;
     }
 
     .container {
@@ -67,6 +98,7 @@
       text-align: center;
       padding: 24px 16px 16px;
       color: white;
+      position: relative;
     }
 
     header h1 {
@@ -81,13 +113,45 @@
       font-size: 14px;
     }
 
+    .header-actions {
+      position: absolute;
+      top: 24px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
     /* Cards */
     .card {
-      background: white;
+      background: var(--card-bg);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 16px;
       box-shadow: var(--shadow-lg);
+      transition: background 0.3s;
     }
 
     .card-header {
@@ -100,7 +164,7 @@
     .card-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--gray-700);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -123,10 +187,11 @@
       font-size: 48px;
       font-weight: 700;
       text-align: center;
-      border: 3px solid var(--gray-200);
+      border: 3px solid var(--border-color);
       border-radius: var(--radius);
       padding: 24px 16px;
-      color: var(--gray-800);
+      color: var(--text-primary);
+      background: var(--input-bg);
       transition: all 0.2s;
       -moz-appearance: textfield;
     }
@@ -144,7 +209,7 @@
     }
 
     .pef-input::placeholder {
-      color: var(--gray-300);
+      color: var(--gray-400);
       font-size: 32px;
     }
 
@@ -153,7 +218,7 @@
       right: 20px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--gray-400);
+      color: var(--text-secondary);
       font-size: 16px;
       font-weight: 500;
     }
@@ -169,7 +234,7 @@
       flex: 1;
       height: 8px;
       border-radius: 4px;
-      background: var(--gray-200);
+      background: var(--border-color);
       transition: all 0.3s;
     }
 
@@ -187,10 +252,14 @@
       margin-bottom: 16px;
     }
 
-    .zone-text.green { background: var(--success-bg); color: #065f46; }
-    .zone-text.yellow { background: var(--warning-bg); color: #92400e; }
-    .zone-text.red { background: var(--danger-bg); color: #991b1b; }
-    .zone-text.neutral { background: var(--gray-100); color: var(--gray-600); }
+    .zone-text.green { background: var(--success-bg); color: #10b981; }
+    .zone-text.yellow { background: var(--warning-bg); color: #f59e0b; }
+    .zone-text.red { background: var(--danger-bg); color: #ef4444; }
+    .zone-text.neutral { background: var(--gray-100); color: var(--text-secondary); }
+
+    [data-theme="dark"] .zone-text.green { color: #34d399; }
+    [data-theme="dark"] .zone-text.yellow { color: #fbbf24; }
+    [data-theme="dark"] .zone-text.red { color: #f87171; }
 
     /* Buttons */
     .btn {
@@ -225,7 +294,7 @@
 
     .btn-secondary {
       background: var(--gray-100);
-      color: var(--gray-700);
+      color: var(--text-primary);
     }
 
     .btn-secondary:hover {
@@ -258,7 +327,7 @@
     .btn-icon svg {
       width: 20px;
       height: 20px;
-      color: var(--gray-600);
+      color: var(--text-secondary);
     }
 
     /* Stats Grid */
@@ -279,12 +348,12 @@
     .stat-value {
       font-size: 24px;
       font-weight: 700;
-      color: var(--gray-800);
+      color: var(--text-primary);
     }
 
     .stat-label {
       font-size: 12px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
       margin-top: 4px;
     }
 
@@ -314,7 +383,7 @@
       display: flex;
       align-items: center;
       padding: 12px;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--border-color);
       gap: 12px;
     }
 
@@ -340,20 +409,98 @@
     .history-value {
       font-weight: 600;
       font-size: 16px;
+      color: var(--text-primary);
     }
 
     .history-time {
       font-size: 12px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
     }
 
     .history-delete {
-      opacity: 0;
+      opacity: 0.5;
       transition: opacity 0.2s;
     }
 
     .history-item:hover .history-delete {
       opacity: 1;
+    }
+
+    /* Touch devices - always show delete button */
+    @media (hover: none) {
+      .history-delete {
+        opacity: 0.7;
+      }
+    }
+
+    /* Variability details list */
+    .variability-list {
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .variability-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+
+    .variability-item:last-child {
+      border-bottom: none;
+    }
+
+    .variability-date {
+      color: var(--text-secondary);
+    }
+
+    .variability-values {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .variability-percent {
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .variability-percent.good {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .variability-percent.moderate {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .variability-percent.poor {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .show-all-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      background: var(--gray-100);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .show-all-btn:hover {
+      background: var(--gray-200);
     }
 
     /* Profile Form */
@@ -365,19 +512,29 @@
       display: block;
       font-size: 14px;
       font-weight: 500;
-      color: var(--gray-700);
+      color: var(--text-primary);
       margin-bottom: 6px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
     }
 
     .form-input, .form-select {
       width: 100%;
       padding: 12px 16px;
       font-size: 16px;
-      border: 2px solid var(--gray-200);
+      border: 2px solid var(--border-color);
       border-radius: var(--radius-sm);
       font-family: inherit;
       transition: all 0.2s;
-      background: white;
+      background: var(--input-bg);
+      color: var(--text-primary);
     }
 
     .form-input:focus, .form-select:focus {
@@ -385,33 +542,52 @@
       border-color: var(--primary);
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      background: var(--gray-100);
-      border-radius: var(--radius-sm);
-      padding: 4px;
-      margin-bottom: 16px;
+    .form-input::placeholder {
+      color: var(--text-secondary);
     }
 
-    .tab {
+    /* Sex selector */
+    .sex-selector {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sex-option {
       flex: 1;
-      padding: 10px;
+      padding: 16px;
       text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--gray-600);
-      background: none;
-      border: none;
-      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: var(--input-bg);
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .tab.active {
-      background: white;
-      color: var(--gray-800);
-      box-shadow: var(--shadow);
+    .sex-option:hover {
+      border-color: var(--primary-light);
+    }
+
+    .sex-option.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .sex-option svg {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .sex-option.active svg {
+      color: var(--primary);
+    }
+
+    .sex-option span {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
 
     /* Modal */
@@ -438,7 +614,7 @@
     }
 
     .modal {
-      background: white;
+      background: var(--card-bg);
       border-radius: var(--radius);
       padding: 24px;
       width: 100%;
@@ -446,7 +622,7 @@
       max-height: 90vh;
       overflow-y: auto;
       transform: translateY(20px);
-      transition: transform 0.3s;
+      transition: transform 0.3s, background 0.3s;
     }
 
     .modal-overlay.active .modal {
@@ -463,6 +639,7 @@
     .modal-title {
       font-size: 20px;
       font-weight: 600;
+      color: var(--text-primary);
     }
 
     /* Toast */
@@ -497,13 +674,14 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: white;
-      border-top: 1px solid var(--gray-200);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: space-around;
       padding: 8px 0;
       padding-bottom: max(8px, env(safe-area-inset-bottom));
       z-index: 100;
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .nav-item {
@@ -511,7 +689,7 @@
       flex-direction: column;
       align-items: center;
       padding: 8px 16px;
-      color: var(--gray-400);
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 12px;
       font-weight: 500;
@@ -545,7 +723,7 @@
     .empty-state {
       text-align: center;
       padding: 40px 20px;
-      color: var(--gray-500);
+      color: var(--text-secondary);
     }
 
     .empty-state svg {
@@ -568,16 +746,17 @@
       text-align: center;
       font-size: 12px;
       font-weight: 500;
-      border: 2px solid var(--gray-200);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
-      background: white;
+      background: var(--input-bg);
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .ref-option.active {
       border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.05);
+      background: rgba(99, 102, 241, 0.1);
       color: var(--primary);
     }
 
@@ -623,6 +802,158 @@
       }
     }
 
+    /* AI Insights */
+    .insights-card {
+      margin-top: 16px;
+    }
+
+    .insight-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+
+    .insight-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .insight-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      width: 28px;
+      text-align: center;
+    }
+
+    .insight-content {
+      flex: 1;
+    }
+
+    .insight-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .insight-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .insight-item.warning {
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning);
+    }
+
+    .insight-item.danger {
+      background: var(--danger-bg);
+      border-left: 3px solid var(--danger);
+    }
+
+    .insight-item.success {
+      background: var(--success-bg);
+      border-left: 3px solid var(--success);
+    }
+
+    .insight-item.info {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    .prediction-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      border: 1px solid var(--primary-light);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .prediction-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .prediction-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .prediction-confidence {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .ai-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .ai-loading .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .trend-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trend-indicator.up {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .trend-indicator.down {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .trend-indicator.stable {
+      background: var(--gray-100);
+      color: var(--text-secondary);
+    }
+
     /* Install prompt */
     .install-banner {
       background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
@@ -652,12 +983,94 @@
       background: white;
       color: var(--primary-dark);
     }
+
+    /* Predicted display box */
+    .predicted-box {
+      background: var(--gray-50);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 8px;
+    }
+
+    .predicted-box .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .predicted-box .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Profile info display */
+    .profile-info {
+      background: var(--gray-50);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-info .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .profile-info .details {
+      flex: 1;
+    }
+
+    .profile-info .name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .profile-info .meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 24px 16px 16px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+    }
+
+    .app-footer .version {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .app-footer .copyright {
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
   <header>
+    <div class="header-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Växla mörkt/ljust läge">
+        <svg id="themeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+      </button>
+    </div>
     <h1>PEF-dagbok</h1>
-    <p>Spara din lungfunktion</p>
+    <p>Spåra din lungfunktion</p>
     <div class="profile-badge" onclick="showProfileModal()">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -670,8 +1083,15 @@
     <!-- Install Banner -->
     <div class="install-banner" id="installBanner">
       <h3>Installera appen</h3>
-      <p>Lagg till PEF-dagbok pa din hemskarm for snabb atkomst och offline-anvandning.</p>
+      <p>Lägg till PEF-dagbok på din hemskärm för snabb åtkomst och offline-användning.</p>
       <button class="btn" onclick="installApp()">Installera</button>
+    </div>
+
+    <!-- Update Banner -->
+    <div class="install-banner" id="updateBanner" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+      <h3>🔄 Ny version tillgänglig!</h3>
+      <p>En uppdatering finns tillgänglig med nya funktioner och förbättringar.</p>
+      <button class="btn" onclick="applyUpdate()" style="background: white; color: #2563eb;">Uppdatera nu</button>
     </div>
 
     <!-- Main Sections (controlled by nav) -->
@@ -684,7 +1104,7 @@
               <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
-              Ny matning
+              Ny mätning
             </span>
           </div>
 
@@ -699,13 +1119,13 @@
             <div class="zone-bar red inactive" id="zoneRed"></div>
           </div>
 
-          <div class="zone-text neutral" id="zoneText">Ange ditt PEF-varde</div>
+          <div class="zone-text neutral" id="zoneText">Ange ditt PEF-värde</div>
 
           <button class="btn btn-primary" id="saveBtn" onclick="saveMeasurement()">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            Spara matning
+            Spara mätning
           </button>
         </div>
 
@@ -717,19 +1137,19 @@
           <div class="stats-grid">
             <div class="stat-box highlight">
               <div class="stat-value" id="todayBest">--</div>
-              <div class="stat-label">Basta idag</div>
+              <div class="stat-label">Bästa idag</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="todayCount">0</div>
-              <div class="stat-label">Matningar</div>
+              <div class="stat-label">Mätningar</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="personalBest">--</div>
-              <div class="stat-label">Personbasta</div>
+              <div class="stat-label">Personbästa</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="predictedValue">--</div>
-              <div class="stat-label">Forvantat</div>
+              <div class="stat-label">Förväntat</div>
             </div>
           </div>
         </div>
@@ -748,8 +1168,8 @@
           </div>
 
           <div class="ref-selector">
-            <button class="ref-option active" data-ref="personal" onclick="setRefMode('personal')">% av personbasta</button>
-            <button class="ref-option" data-ref="predicted" onclick="setRefMode('predicted')">% av forvantat</button>
+            <button class="ref-option active" data-ref="personal" onclick="setRefMode('personal')">% av personbästa</button>
+            <button class="ref-option" data-ref="predicted" onclick="setRefMode('predicted')">% av förväntat</button>
           </div>
 
           <div class="chart-container">
@@ -764,7 +1184,7 @@
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-value" id="stat30Best">--</div>
-              <div class="stat-label">Basta</div>
+              <div class="stat-label">Bästa</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Avg">--</div>
@@ -772,22 +1192,55 @@
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Low">--</div>
-              <div class="stat-label">Lagsta</div>
+              <div class="stat-label">Lägsta</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="stat30Count">0</div>
-              <div class="stat-label">Matningar</div>
+              <div class="stat-label">Mätningar</div>
             </div>
           </div>
 
           <div class="stats-grid" style="margin-top: 8px;">
             <div class="stat-box" style="background: var(--success-bg);">
-              <div class="stat-value" id="statGreen" style="color: #065f46;">0%</div>
-              <div class="stat-label" style="color: #065f46;">Gron zon</div>
+              <div class="stat-value" id="statGreen" style="color: var(--success);">0%</div>
+              <div class="stat-label" style="color: var(--success);">Grön zon</div>
             </div>
             <div class="stat-box" style="background: var(--warning-bg);">
-              <div class="stat-value" id="statYellow" style="color: #92400e;">0%</div>
-              <div class="stat-label" style="color: #92400e;">Gul zon</div>
+              <div class="stat-value" id="statYellow" style="color: var(--warning);">0%</div>
+              <div class="stat-label" style="color: var(--warning);">Gul zon</div>
+            </div>
+          </div>
+
+          <div class="stat-box" style="margin-top: 8px; cursor: pointer;" onclick="toggleVariabilityDetails()">
+            <div class="stat-value" id="statVariability">--%</div>
+            <div class="stat-label">Dygnsvariabilitet <span style="font-size: 10px; opacity: 0.7;">(tryck för detaljer)</span></div>
+          </div>
+          <div id="variabilityDetails" style="display: none; margin-top: 8px;">
+            <div class="variability-list" id="variabilityList"></div>
+          </div>
+        </div>
+
+        <!-- AI Insights Card -->
+        <div class="card insights-card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              Insikter
+              <span class="ai-badge" id="aiBadge" style="display:none;">AI</span>
+            </span>
+          </div>
+          <div id="insightsContainer">
+            <div class="empty-state" style="padding: 20px;">
+              <p>Logga mätningar för att få insikter</p>
+            </div>
+          </div>
+          <div id="predictionContainer" style="display:none;">
+            <div class="prediction-box">
+              <div class="prediction-label">AI-prediktion för imorgon</div>
+              <div class="prediction-value" id="predictionValue">--</div>
+              <div class="prediction-confidence" id="predictionConfidence"></div>
             </div>
           </div>
         </div>
@@ -811,7 +1264,7 @@
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
               </svg>
-              <p>Inga matningar annu</p>
+              <p>Inga mätningar ännu</p>
             </div>
           </div>
         </div>
@@ -837,6 +1290,12 @@
         </div>
       </section>
     </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="version">PEF-dagbok v1.0</div>
+      <div class="copyright">© 2026 Lukas Carnerheim</div>
+    </footer>
   </div>
 
   <!-- Bottom Navigation -->
@@ -874,37 +1333,77 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kon</label>
-        <select id="profileSex" class="form-select">
-          <option value="male">Man</option>
-          <option value="female">Kvinna</option>
-        </select>
+        <label class="form-label">Namn</label>
+        <input type="text" id="profileName" class="form-input" placeholder="Ditt namn">
       </div>
 
       <div class="form-group">
-        <label class="form-label">Fodelsear</label>
-        <input type="number" id="profileBirthYear" class="form-input" placeholder="t.ex. 1985" min="1920" max="2020">
+        <label class="form-label">Kön</label>
+        <div class="sex-selector">
+          <div class="sex-option" data-sex="male" onclick="selectSex('male')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="10" cy="14" r="5" stroke-width="2"/>
+              <path stroke-linecap="round" stroke-width="2" d="M14 10l5-5m0 0v4m0-4h-4"/>
+            </svg>
+            <span>Man</span>
+          </div>
+          <div class="sex-option" data-sex="female" onclick="selectSex('female')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="9" r="5" stroke-width="2"/>
+              <path stroke-linecap="round" stroke-width="2" d="M12 14v7m-3-3h6"/>
+            </svg>
+            <span>Kvinna</span>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Langd (cm)</label>
+        <label class="form-label">Födelsedatum</label>
+        <div class="form-row">
+          <div class="form-group">
+            <select id="profileBirthYear" class="form-select">
+              <option value="">År</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <select id="profileBirthMonth" class="form-select">
+              <option value="">Månad</option>
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Mars</option>
+              <option value="4">April</option>
+              <option value="5">Maj</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Augusti</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Längd (cm)</label>
         <input type="number" id="profileHeight" class="form-input" placeholder="t.ex. 175" min="100" max="220">
       </div>
 
       <div class="form-group">
-        <label class="form-label">Berakningsmetod</label>
-        <select id="profileMethod" class="form-select">
-          <option value="eu_table">EU-standardtabell</option>
-          <option value="nunn_gregg">Nunn & Gregg</option>
+        <label class="form-label">Referensalgoritm</label>
+        <select id="profileAlgorithm" class="form-select">
+          <option value="eu">EU-skala (standard i Sverige)</option>
+          <option value="nunn">Nunn & Gregg (1989)</option>
         </select>
       </div>
 
-      <div class="form-group" style="background: var(--gray-50); padding: 16px; border-radius: var(--radius-sm); margin-top: 8px;">
-        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Forvantat PEF-varde</div>
-        <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="predictedDisplay">-- L/min</div>
+      <div class="predicted-box">
+        <div class="label">Förväntat PEF-värde</div>
+        <div class="value" id="predictedDisplay">-- L/min</div>
       </div>
 
-      <button class="btn btn-primary" onclick="saveProfile()" style="margin-top: 8px;">Spara profil</button>
+      <button class="btn btn-primary" onclick="saveProfile()" style="margin-top: 16px;">Spara profil</button>
     </div>
   </div>
 
@@ -918,20 +1417,25 @@
 
     let measurements = [];
     let profile = {
+      name: '',
       sex: 'male',
       birthYear: null,
+      birthMonth: null,
       heightCm: null,
-      method: 'eu_table',
+      algorithm: 'eu',
       predicted: null,
       personalBest: null
     };
     let chart = null;
     let refMode = 'personal';
     let deferredPrompt = null;
+    let darkMode = false;
+    let showAllHistory = false;
 
     function loadData() {
       const savedMeas = localStorage.getItem('pef_measurements');
       const savedProfile = localStorage.getItem('pef_profile');
+      const savedTheme = localStorage.getItem('pef_theme');
 
       if (savedMeas) {
         measurements = JSON.parse(savedMeas);
@@ -939,6 +1443,12 @@
 
       if (savedProfile) {
         profile = { ...profile, ...JSON.parse(savedProfile) };
+      }
+
+      if (savedTheme === 'dark') {
+        darkMode = true;
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon();
       }
 
       // Calculate personal best
@@ -950,11 +1460,55 @@
       if (profile.birthYear && profile.heightCm) {
         profile.predicted = calculatePredictedPEF();
       }
+
+      // Populate birth year dropdown
+      populateBirthYears();
     }
 
     function saveData() {
       localStorage.setItem('pef_measurements', JSON.stringify(measurements));
       localStorage.setItem('pef_profile', JSON.stringify(profile));
+    }
+
+    function populateBirthYears() {
+      const select = document.getElementById('profileBirthYear');
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear - 5; year >= currentYear - 100; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        select.appendChild(option);
+      }
+    }
+
+    // ============================================
+    // Theme Toggle
+    // ============================================
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      if (darkMode) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('pef_theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('pef_theme', 'light');
+      }
+      updateThemeIcon();
+
+      // Update chart colors
+      if (chart) {
+        updateChart();
+      }
+    }
+
+    function updateThemeIcon() {
+      const icon = document.getElementById('themeIcon');
+      if (darkMode) {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+      }
     }
 
     // ============================================
@@ -1009,18 +1563,57 @@
       return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     }
 
-    function calculatePredictedPEF() {
-      if (!profile.birthYear || !profile.heightCm || !profile.sex) return null;
+    function calculateAge(birthYear, birthMonth) {
+      const now = new Date();
+      let age = now.getFullYear() - birthYear;
+      if (birthMonth && now.getMonth() + 1 < birthMonth) {
+        age--;
+      }
+      return age;
+    }
 
-      const age = new Date().getFullYear() - profile.birthYear;
-      const height = profile.heightCm;
-      const table = EU_TABLE[profile.sex];
+    function calculatePredictedPEF(tempProfile = null) {
+      const p = tempProfile || profile;
+      if (!p.birthYear || !p.heightCm || !p.sex) return null;
 
+      const age = calculateAge(p.birthYear, p.birthMonth);
+      const heightCm = p.heightCm;
+      const algorithm = p.algorithm || 'eu';
+
+      // Use Nunn & Gregg if selected
+      if (algorithm === 'nunn') {
+        return calculateNunnGregg(p.sex, age, heightCm);
+      }
+
+      // Default: EU Table with bilinear interpolation
+      return calculateEUTable(p.sex, age, heightCm);
+    }
+
+    // Nunn & Gregg (1989) formula
+    // Original formulas in L/s, multiply by 60 for L/min
+    function calculateNunnGregg(sex, age, heightCm) {
+      const heightM = heightCm / 100; // Convert to meters
+
+      let pef;
+      if (sex === 'female') {
+        // Women: PEF (L/s) = 5.50×H - 0.030×A - 1.11
+        pef = (5.50 * heightM - 0.030 * age - 1.11) * 60;
+      } else {
+        // Men: PEF (L/s) = 6.14×H - 0.043×A + 0.15
+        pef = (6.14 * heightM - 0.043 * age + 0.15) * 60;
+      }
+
+      return Math.round(Math.max(pef, 100)); // Minimum 100 L/min
+    }
+
+    // EU Table calculation with bilinear interpolation
+    function calculateEUTable(sex, age, heightCm) {
+      const table = EU_TABLE[sex];
       if (!table) return null;
 
       // Clamp values to table range
       const clampedAge = Math.max(table.ages[0], Math.min(table.ages[table.ages.length - 1], age));
-      const clampedHeight = Math.max(table.heights[0], Math.min(table.heights[table.heights.length - 1], height));
+      const clampedHeight = Math.max(table.heights[0], Math.min(table.heights[table.heights.length - 1], heightCm));
 
       // Find surrounding indices for age
       let ageIdx0 = 0, ageIdx1 = 0;
@@ -1079,10 +1672,10 @@
 
     function getZoneText(zone) {
       switch(zone) {
-        case 'green': return 'Gron zon - Bra kontroll';
-        case 'yellow': return 'Gul zon - Var uppmarksam';
-        case 'red': return 'Rod zon - Agera nu';
-        default: return 'Ange ditt PEF-varde';
+        case 'green': return 'Grön zon - Bra kontroll';
+        case 'yellow': return 'Gul zon - Var uppmärksam';
+        case 'red': return 'Röd zon - Agera nu';
+        default: return 'Ange ditt PEF-värde';
       }
     }
 
@@ -1097,7 +1690,7 @@
         zoneYellow.classList.add('inactive');
         zoneRed.classList.add('inactive');
         zoneText.className = 'zone-text neutral';
-        zoneText.textContent = 'Ange ditt PEF-varde';
+        zoneText.textContent = 'Ange ditt PEF-värde';
         return;
       }
 
@@ -1120,7 +1713,7 @@
       const value = parseInt(input.value);
 
       if (!value || value < 60 || value > 900) {
-        showToast('Ange ett varde mellan 60-900 L/min', 'error');
+        showToast('Ange ett värde mellan 60-900 L/min', 'error');
         return;
       }
 
@@ -1143,15 +1736,20 @@
       input.value = '';
       updateZoneIndicator(null);
       updateUI();
-      showToast('Matning sparad!', 'success');
+      showToast('Mätning sparad!', 'success');
 
       // Animate button
       document.getElementById('saveBtn').classList.add('pulse');
       setTimeout(() => document.getElementById('saveBtn').classList.remove('pulse'), 300);
     }
 
+    function toggleHistoryView() {
+      showAllHistory = !showAllHistory;
+      updateHistoryList();
+    }
+
     function deleteMeasurement(id) {
-      if (!confirm('Ta bort denna matning?')) return;
+      if (!confirm('Ta bort denna mätning?')) return;
 
       measurements = measurements.filter(m => m.id !== id);
 
@@ -1162,11 +1760,11 @@
 
       saveData();
       updateUI();
-      showToast('Matning borttagen');
+      showToast('Mätning borttagen');
     }
 
     function clearAllData() {
-      if (!confirm('Ar du saker pa att du vill radera ALL data? Detta kan inte angras.')) return;
+      if (!confirm('Är du säker på att du vill radera ALL data? Detta kan inte ångras.')) return;
 
       measurements = [];
       profile.personalBest = null;
@@ -1185,6 +1783,7 @@
       updateStatistics();
       updateChart();
       updateProfileBadge();
+      updateInsights();
     }
 
     function updateQuickStats() {
@@ -1216,7 +1815,7 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            <p>Inga matningar annu</p>
+            <p>Inga mätningar ännu</p>
           </div>
         `;
         return;
@@ -1224,8 +1823,11 @@
 
       // Sort by newest first
       const sorted = [...measurements].sort((a, b) => b.ts - a.ts);
+      const displayLimit = showAllHistory ? 50 : 3;
+      const displayList = sorted.slice(0, displayLimit);
+      const hasMore = sorted.length > 3;
 
-      list.innerHTML = sorted.slice(0, 50).map(m => {
+      let html = displayList.map(m => {
         const date = new Date(m.ts);
         const dateStr = date.toLocaleDateString('sv-SE');
         const timeStr = date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
@@ -1237,7 +1839,7 @@
               <div class="history-value">${m.pef} L/min</div>
               <div class="history-time">${dateStr} kl ${timeStr}</div>
             </div>
-            <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})">
+            <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})" title="Ta bort">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
@@ -1245,6 +1847,17 @@
           </div>
         `;
       }).join('');
+
+      // Add "Show more" / "Show less" button if there are more than 3
+      if (hasMore) {
+        if (showAllHistory) {
+          html += `<button class="show-all-btn" onclick="toggleHistoryView()">Visa färre</button>`;
+        } else {
+          html += `<button class="show-all-btn" onclick="toggleHistoryView()">Visa alla (${sorted.length} mätningar)</button>`;
+        }
+      }
+
+      list.innerHTML = html;
     }
 
     function updateStatistics() {
@@ -1258,6 +1871,7 @@
         document.getElementById('stat30Count').textContent = '0';
         document.getElementById('statGreen').textContent = '0%';
         document.getElementById('statYellow').textContent = '0%';
+        document.getElementById('statVariability').textContent = '--%';
         return;
       }
 
@@ -1277,13 +1891,150 @@
 
       document.getElementById('statGreen').textContent = Math.round(100 * greenCount / recent.length) + '%';
       document.getElementById('statYellow').textContent = Math.round(100 * yellowCount / recent.length) + '%';
+
+      // Dygnsvariabilitet: kliniskt korrekt beräkning (morgon vs kväll)
+      const variability = calculateDailyVariability(recent);
+      document.getElementById('statVariability').textContent = variability !== null ? Math.round(variability) + '%' : '--%';
+    }
+
+    // Beräknar kliniskt korrekt dygnsvariabilitet
+    // Kräver mätningar både morgon (05-10) och kväll (18-23)
+    function calculateDailyVariability(measurements) {
+      // Gruppera mätningar per dag
+      const byDay = new Map();
+
+      for (const m of measurements) {
+        const date = new Date(m.ts);
+        const dayKey = date.toISOString().slice(0, 10);
+        const hour = date.getHours();
+
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, { morning: [], evening: [] });
+        }
+
+        // Morgon: 05:00-09:59
+        if (hour >= 5 && hour < 10) {
+          byDay.get(dayKey).morning.push(m.pef);
+        }
+        // Kväll: 18:00-22:59
+        else if (hour >= 18 && hour < 23) {
+          byDay.get(dayKey).evening.push(m.pef);
+        }
+        // Övriga tider räknas inte in i variabiliteten
+      }
+
+      // Beräkna variabilitet för dagar med både morgon- och kvällsvärden
+      const dailyVariabilities = [];
+
+      for (const [day, values] of byDay) {
+        if (values.morning.length > 0 && values.evening.length > 0) {
+          const morningBest = Math.max(...values.morning);
+          const eveningBest = Math.max(...values.evening);
+          const higher = Math.max(morningBest, eveningBest);
+          const lower = Math.min(morningBest, eveningBest);
+          const dayVariability = ((higher - lower) / higher) * 100;
+          dailyVariabilities.push(dayVariability);
+        }
+      }
+
+      if (dailyVariabilities.length === 0) {
+        return null;
+      }
+
+      return dailyVariabilities.reduce((sum, v) => sum + v, 0) / dailyVariabilities.length;
+    }
+
+    // Returnerar detaljerad data per dag för visning och export
+    function getDailyVariabilityDetails(measurements) {
+      const byDay = new Map();
+
+      for (const m of measurements) {
+        const date = new Date(m.ts);
+        const dayKey = date.toISOString().slice(0, 10);
+        const hour = date.getHours();
+
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, { morning: [], evening: [] });
+        }
+
+        if (hour >= 5 && hour < 10) {
+          byDay.get(dayKey).morning.push(m.pef);
+        } else if (hour >= 18 && hour < 23) {
+          byDay.get(dayKey).evening.push(m.pef);
+        }
+      }
+
+      const details = [];
+
+      for (const [day, values] of byDay) {
+        if (values.morning.length > 0 && values.evening.length > 0) {
+          const morningBest = Math.max(...values.morning);
+          const eveningBest = Math.max(...values.evening);
+          const higher = Math.max(morningBest, eveningBest);
+          const lower = Math.min(morningBest, eveningBest);
+          const variability = ((higher - lower) / higher) * 100;
+
+          details.push({
+            date: day,
+            morning: morningBest,
+            evening: eveningBest,
+            variability: Math.round(variability)
+          });
+        }
+      }
+
+      // Sortera senaste först
+      return details.sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    let showVariabilityDetails = false;
+
+    function toggleVariabilityDetails() {
+      showVariabilityDetails = !showVariabilityDetails;
+      const container = document.getElementById('variabilityDetails');
+      container.style.display = showVariabilityDetails ? 'block' : 'none';
+
+      if (showVariabilityDetails) {
+        updateVariabilityList();
+      }
+    }
+
+    function updateVariabilityList() {
+      const list = document.getElementById('variabilityList');
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const recent = measurements.filter(m => m.ts >= thirtyDaysAgo);
+      const details = getDailyVariabilityDetails(recent);
+
+      if (details.length === 0) {
+        list.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-secondary);">Logga morgon- och kvällsvärden för att se daglig variabilitet</div>';
+        return;
+      }
+
+      list.innerHTML = details.map(d => {
+        const dateStr = new Date(d.date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+        let colorClass = 'good';
+        if (d.variability >= 20) colorClass = 'poor';
+        else if (d.variability >= 10) colorClass = 'moderate';
+
+        return `
+          <div class="variability-item">
+            <div>
+              <div class="variability-date">${dateStr}</div>
+              <div class="variability-values">M: ${d.morning} / K: ${d.evening}</div>
+            </div>
+            <div class="variability-percent ${colorClass}">${d.variability}%</div>
+          </div>
+        `;
+      }).join('');
     }
 
     function updateProfileBadge() {
       const badge = document.getElementById('profileBadgeText');
-      if (profile.birthYear && profile.heightCm) {
-        const age = new Date().getFullYear() - profile.birthYear;
-        badge.textContent = `${age} ar, ${profile.heightCm} cm`;
+      if (profile.name) {
+        badge.textContent = profile.name;
+      } else if (profile.birthYear && profile.heightCm) {
+        const age = calculateAge(profile.birthYear, profile.birthMonth);
+        badge.textContent = `${age} år, ${profile.heightCm} cm`;
       } else {
         badge.textContent = 'Ange profil';
       }
@@ -1317,11 +2068,11 @@
         .sort((a, b) => a.day.localeCompare(b.day));
     }
 
-    function rollingAverage(data, days) {
+    function rollingAverage(data, days, valueKey = 'best') {
       return data.map((item, idx) => {
         const start = Math.max(0, idx - days + 1);
         const window = data.slice(start, idx + 1);
-        const avg = window.reduce((sum, d) => sum + d.best, 0) / window.length;
+        const avg = window.reduce((sum, d) => sum + d[valueKey], 0) / window.length;
         return { day: item.day, value: Math.round(avg) };
       });
     }
@@ -1336,8 +2087,50 @@
 
       const daily = dailyBuckets();
 
+      const textColor = darkMode ? '#e5e7eb' : '#374151';
+      const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+
+      // Bestäm referensvärde baserat på läge
+      let reference = null;
+      let missingRef = false;
+
+      if (refMode === 'predicted') {
+        reference = profile.predicted;
+        if (!reference) missingRef = true;
+      } else {
+        reference = profile.personalBest;
+        if (!reference) missingRef = true;
+      }
+
+      // Fallback om referens saknas
+      if (missingRef || !reference || reference <= 0) {
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: refMode === 'predicted'
+                  ? 'Fyll i profil för förväntat värde'
+                  : 'Logga mätningar för personbästa',
+                color: textColor,
+                font: { size: 14 }
+              }
+            },
+            scales: {
+              x: { display: false },
+              y: { display: false }
+            }
+          }
+        });
+        return;
+      }
+
       if (daily.length === 0) {
-        // Draw empty state
         chart = new Chart(ctx, {
           type: 'line',
           data: { labels: [], datasets: [] },
@@ -1346,28 +2139,41 @@
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false }
+            },
+            scales: {
+              x: { ticks: { color: textColor } },
+              y: { ticks: { color: textColor } }
             }
           }
         });
         return;
       }
 
-      // Take last 30 days
       const last30 = daily.slice(-30);
-      const r7 = rollingAverage(last30, 7);
+
+      // Konvertera till procent
+      const last30WithPercent = last30.map(d => ({
+        ...d,
+        percent: Math.round((d.best / reference) * 100)
+      }));
+
+      // Beräkna 7-dagars medel på procentvärden
+      const r7 = rollingAverage(last30WithPercent, 7, 'percent');
 
       const labels = last30.map(d => {
         const date = new Date(d.day);
         return date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
       });
 
-      const reference = refMode === 'predicted' && profile.predicted
-        ? profile.predicted
-        : (profile.personalBest || profile.predicted || 500);
+      // Y-axel för procent (dynamisk med marginal, min 0, max minst 120%)
+      const maxPercent = Math.max(...last30WithPercent.map(d => d.percent), 100);
+      const maxY = Math.round(Math.max(maxPercent * 1.1, 120));
 
-      const greenLine = reference * 0.8;
-      const yellowLine = reference * 0.5;
-      const maxY = Math.max(...last30.map(d => d.best), reference) * 1.1;
+      // Zonlinjer i procent
+      const greenLine = 80;  // 80% = grön zon
+      const yellowLine = 50; // 50% = gul zon
+
+      const refLabel = refMode === 'predicted' ? 'förväntat' : 'personbästa';
 
       chart = new Chart(ctx, {
         type: 'line',
@@ -1375,10 +2181,10 @@
           labels,
           datasets: [
             {
-              label: 'Basta/dag',
-              data: last30.map(d => d.best),
+              label: `% av ${refLabel}`,
+              data: last30WithPercent.map(d => d.percent),
               borderColor: '#6366f1',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              backgroundColor: darkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)',
               borderWidth: 2,
               pointRadius: 4,
               pointBackgroundColor: '#6366f1',
@@ -1407,32 +2213,42 @@
             y: {
               min: 0,
               max: maxY,
-              grid: {
-                color: 'rgba(0,0,0,0.05)'
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                callback: function(value) {
+                  return value + '%';
+                }
               }
             },
             x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                maxTicksLimit: 6
-              }
+              grid: { display: false },
+              ticks: { maxTicksLimit: 6, color: textColor }
             }
           },
           plugins: {
             legend: {
               display: true,
               position: 'bottom',
-              labels: {
-                boxWidth: 12,
-                padding: 16
-              }
+              labels: { boxWidth: 12, padding: 16, color: textColor }
             },
             tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
+              backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
+              titleColor: darkMode ? '#111' : '#fff',
+              bodyColor: darkMode ? '#111' : '#fff',
               padding: 12,
-              cornerRadius: 8
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const percent = context.raw;
+                  const absolute = last30[idx]?.best || 0;
+                  if (context.datasetIndex === 0) {
+                    return `${percent}% (${absolute} L/min)`;
+                  }
+                  return `${percent}%`;
+                }
+              }
             }
           }
         },
@@ -1444,32 +2260,17 @@
 
             const y = scales.y;
 
-            // Green zone (80%+)
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(maxY),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(greenLine) - y.getPixelForValue(maxY)
-            );
+            // Grön zon: >= 80%
+            ctx.fillStyle = darkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(maxY), chartArea.right - chartArea.left, y.getPixelForValue(greenLine) - y.getPixelForValue(maxY));
 
-            // Yellow zone (50-80%)
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(greenLine),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine)
-            );
+            // Gul zon: 50-79%
+            ctx.fillStyle = darkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(greenLine), chartArea.right - chartArea.left, y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine));
 
-            // Red zone (<50%)
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
-            ctx.fillRect(
-              chartArea.left,
-              y.getPixelForValue(yellowLine),
-              chartArea.right - chartArea.left,
-              y.getPixelForValue(0) - y.getPixelForValue(yellowLine)
-            );
+            // Röd zon: < 50%
+            ctx.fillStyle = darkMode ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(yellowLine), chartArea.right - chartArea.left, y.getPixelForValue(0) - y.getPixelForValue(yellowLine));
           }
         }]
       });
@@ -1481,11 +2282,7 @@
         btn.classList.toggle('active', btn.dataset.ref === mode);
       });
 
-      // Recalculate zones for all measurements
-      measurements = measurements.map(m => ({
-        ...m,
-        zone: getZone(m.pef)
-      }));
+      measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
       saveData();
 
       updateChart();
@@ -1496,11 +2293,23 @@
     // Profile
     // ============================================
 
+    function selectSex(sex) {
+      document.querySelectorAll('.sex-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.sex === sex);
+      });
+      updatePredictedDisplay();
+    }
+
     function showProfileModal() {
-      document.getElementById('profileSex').value = profile.sex || 'male';
+      document.getElementById('profileName').value = profile.name || '';
       document.getElementById('profileBirthYear').value = profile.birthYear || '';
+      document.getElementById('profileBirthMonth').value = profile.birthMonth || '';
       document.getElementById('profileHeight').value = profile.heightCm || '';
-      document.getElementById('profileMethod').value = profile.method || 'eu_table';
+      document.getElementById('profileAlgorithm').value = profile.algorithm || 'eu';
+
+      document.querySelectorAll('.sex-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.sex === (profile.sex || 'male'));
+      });
 
       updatePredictedDisplay();
       document.getElementById('profileModal').classList.add('active');
@@ -1511,36 +2320,31 @@
     }
 
     function updatePredictedDisplay() {
-      const sex = document.getElementById('profileSex').value;
+      const sex = document.querySelector('.sex-option.active')?.dataset.sex || 'male';
       const birthYear = parseInt(document.getElementById('profileBirthYear').value);
+      const birthMonth = parseInt(document.getElementById('profileBirthMonth').value);
       const height = parseInt(document.getElementById('profileHeight').value);
+      const algorithm = document.getElementById('profileAlgorithm').value || 'eu';
 
       if (birthYear && height) {
-        const tempProfile = { sex, birthYear, heightCm: height };
-        const oldProfile = profile;
-        profile = tempProfile;
-        const predicted = calculatePredictedPEF();
-        profile = oldProfile;
-
-        document.getElementById('predictedDisplay').textContent =
-          predicted ? `${predicted} L/min` : '-- L/min';
+        const tempProfile = { sex, birthYear, birthMonth, heightCm: height, algorithm };
+        const predicted = calculatePredictedPEF(tempProfile);
+        document.getElementById('predictedDisplay').textContent = predicted ? `${predicted} L/min` : '-- L/min';
       } else {
         document.getElementById('predictedDisplay').textContent = '-- L/min';
       }
     }
 
     function saveProfile() {
-      profile.sex = document.getElementById('profileSex').value;
+      profile.name = document.getElementById('profileName').value.trim();
+      profile.sex = document.querySelector('.sex-option.active')?.dataset.sex || 'male';
       profile.birthYear = parseInt(document.getElementById('profileBirthYear').value) || null;
+      profile.birthMonth = parseInt(document.getElementById('profileBirthMonth').value) || null;
       profile.heightCm = parseInt(document.getElementById('profileHeight').value) || null;
-      profile.method = document.getElementById('profileMethod').value;
+      profile.algorithm = document.getElementById('profileAlgorithm').value || 'eu';
       profile.predicted = calculatePredictedPEF();
 
-      // Recalculate zones
-      measurements = measurements.map(m => ({
-        ...m,
-        zone: getZone(m.pef)
-      }));
+      measurements = measurements.map(m => ({ ...m, zone: getZone(m.pef) }));
 
       saveData();
       hideProfileModal();
@@ -1554,7 +2358,7 @@
 
     function exportCSV() {
       if (measurements.length === 0) {
-        showToast('Inga matningar att exportera', 'error');
+        showToast('Inga mätningar att exportera', 'error');
         return;
       }
 
@@ -1568,7 +2372,7 @@
           date.toLocaleDateString('sv-SE'),
           date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }),
           m.pef,
-          m.zone === 'green' ? 'Gron' : m.zone === 'yellow' ? 'Gul' : 'Rod',
+          m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd',
           pct + '%'
         ];
       });
@@ -1588,22 +2392,27 @@
 
     function exportPDF() {
       if (measurements.length === 0) {
-        showToast('Inga matningar att exportera', 'error');
+        showToast('Inga mätningar att exportera', 'error');
         return;
       }
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      try {
+        // Check if jsPDF is loaded
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          showToast('PDF-biblioteket laddas, försök igen om en sekund', 'error');
+          return;
+        }
 
-      let y = 20;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-      // Title
+        let y = 20;
+
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
       doc.text('PEF-rapport', 20, y);
       y += 15;
 
-      // Date range
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
       const firstDate = new Date(Math.min(...measurements.map(m => m.ts)));
@@ -1611,26 +2420,29 @@
       doc.text(`Period: ${firstDate.toLocaleDateString('sv-SE')} - ${lastDate.toLocaleDateString('sv-SE')}`, 20, y);
       y += 12;
 
-      // Profile info
+      if (profile.name) {
+        doc.text(`Patient: ${profile.name}`, 20, y);
+        y += 8;
+      }
+
       if (profile.birthYear) {
-        const age = new Date().getFullYear() - profile.birthYear;
-        doc.text(`Patient: ${profile.sex === 'female' ? 'Kvinna' : 'Man'}, ${age} ar, ${profile.heightCm || '-'} cm`, 20, y);
+        const age = calculateAge(profile.birthYear, profile.birthMonth);
+        doc.text(`${profile.sex === 'female' ? 'Kvinna' : 'Man'}, ${age} år, ${profile.heightCm || '-'} cm`, 20, y);
         y += 8;
       }
 
       if (profile.predicted) {
-        doc.text(`Forvantat PEF: ${profile.predicted} L/min`, 20, y);
+        doc.text(`Förväntat PEF: ${profile.predicted} L/min`, 20, y);
         y += 8;
       }
 
       if (profile.personalBest) {
-        doc.text(`Personbasta: ${profile.personalBest} L/min`, 20, y);
+        doc.text(`Personbästa: ${profile.personalBest} L/min`, 20, y);
         y += 8;
       }
 
       y += 10;
 
-      // Statistics
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('Sammanfattning', 20, y);
@@ -1643,21 +2455,55 @@
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Antal matningar: ${measurements.length}`, 20, y); y += 7;
-      doc.text(`Hogsta varde: ${best} L/min`, 20, y); y += 7;
-      doc.text(`Lagsta varde: ${low} L/min`, 20, y); y += 7;
-      doc.text(`Medelvarde: ${avg} L/min`, 20, y); y += 7;
+      doc.text(`Antal mätningar: ${measurements.length}`, 20, y); y += 7;
+      doc.text(`Högsta värde: ${best} L/min`, 20, y); y += 7;
+      doc.text(`Lägsta värde: ${low} L/min`, 20, y); y += 7;
+      doc.text(`Medelvärde: ${avg} L/min`, 20, y); y += 7;
 
-      // Zone distribution
       const greenCount = measurements.filter(m => m.zone === 'green').length;
       const yellowCount = measurements.filter(m => m.zone === 'yellow').length;
       const redCount = measurements.filter(m => m.zone === 'red').length;
 
-      doc.text(`Gron zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
+      doc.text(`Grön zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
       doc.text(`Gul zon: ${Math.round(100 * yellowCount / measurements.length)}%`, 20, y); y += 7;
-      doc.text(`Rod zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
+      doc.text(`Röd zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
 
-      // Add chart image
+      // Dygnsvariabilitet per dag
+      const variabilityDetails = getDailyVariabilityDetails(measurements);
+      if (variabilityDetails.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Dygnsvariabilitet', 20, y);
+        y += 10;
+
+        const avgVariability = variabilityDetails.reduce((sum, d) => sum + d.variability, 0) / variabilityDetails.length;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Medelvärde: ${Math.round(avgVariability)}%`, 20, y);
+        y += 8;
+
+        const variabilityTableData = variabilityDetails.slice(0, 14).map(d => {
+          const dateStr = new Date(d.date).toLocaleDateString('sv-SE');
+          let status = 'Bra';
+          if (d.variability >= 20) status = 'Hög';
+          else if (d.variability >= 10) status = 'Måttlig';
+          return [dateStr, `${d.morning}`, `${d.evening}`, `${d.variability}%`, status];
+        });
+
+        doc.autoTable({
+          startY: y,
+          head: [['Datum', 'Morgon', 'Kväll', 'Variabilitet', 'Status']],
+          body: variabilityTableData,
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [99, 102, 241] },
+          columnStyles: {
+            4: { fontStyle: 'bold' }
+          }
+        });
+
+        y = doc.lastAutoTable.finalY + 15;
+      }
+
       const chartCanvas = document.getElementById('pefChart');
       if (chartCanvas) {
         const chartImg = chartCanvas.toDataURL('image/png', 1.0);
@@ -1667,7 +2513,6 @@
         y += imgHeight + 15;
       }
 
-      // Measurements table
       if (y > 250) {
         doc.addPage();
         y = 20;
@@ -1675,7 +2520,7 @@
 
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Matningar', 20, y);
+      doc.text('Mätningar', 20, y);
       y += 10;
 
       const tableData = measurements
@@ -1690,13 +2535,13 @@
             date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }),
             `${m.pef} L/min`,
             `${pct}%`,
-            m.zone === 'green' ? 'Gron' : m.zone === 'yellow' ? 'Gul' : 'Rod'
+            m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd'
           ];
         });
 
       doc.autoTable({
         startY: y,
-        head: [['Datum', 'Tid', 'Varde', '% av ref', 'Zon']],
+        head: [['Datum', 'Tid', 'Värde', '% av ref', 'Zon']],
         body: tableData,
         styles: { fontSize: 9 },
         headStyles: { fillColor: [99, 102, 241] }
@@ -1704,6 +2549,11 @@
 
       doc.save(`pef-rapport-${new Date().toISOString().slice(0, 10)}.pdf`);
       showToast('PDF-rapport skapad!', 'success');
+
+      } catch (error) {
+        console.error('PDF export error:', error);
+        showToast('Kunde inte skapa PDF. Försök igen.', 'error');
+      }
     }
 
     // ============================================
@@ -1720,6 +2570,7 @@
 
       if (sectionId === 'sectionStats') {
         updateChart();
+        updateInsights();
       }
     }
 
@@ -1731,10 +2582,7 @@
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.className = 'toast show ' + type;
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
     // ============================================
@@ -1749,17 +2597,300 @@
 
     function installApp() {
       if (!deferredPrompt) return;
-
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((result) => {
+      deferredPrompt.userChoice.then(() => {
         deferredPrompt = null;
         document.getElementById('installBanner').classList.remove('show');
       });
     }
 
-    // Service Worker
+    // Service Worker med uppdateringsdetektering
+    let newWorker = null;
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        // Kolla efter uppdateringar direkt vid start
+        reg.update();
+
+        // Lyssna på nya versioner
+        reg.addEventListener('updatefound', () => {
+          newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Ny version installerad - visa banner
+              document.getElementById('updateBanner').classList.add('show');
+            }
+          });
+        });
+      }).catch(() => {});
+
+      // När ny service worker tar över, ladda om sidan
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+
+    function applyUpdate() {
+      if (newWorker) {
+        newWorker.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        // Fallback: force reload
+        window.location.reload(true);
+      }
+    }
+
+    // ============================================
+    // AI Analysis (Pattern Analysis + TensorFlow.js)
+    // ============================================
+
+    let tfModel = null;
+    let isModelTraining = false;
+
+    // Pattern Analysis (Alternativ 1 - fungerar direkt)
+    function analyzePatterns() {
+      const container = document.getElementById('insightsContainer');
+      const insights = [];
+
+      if (measurements.length < 3) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 20px;">
+            <p>Logga minst 3 mätningar för att få insikter</p>
+          </div>
+        `;
+        return;
+      }
+
+      const now = Date.now();
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+
+      const recent = measurements.filter(m => m.ts >= sevenDaysAgo);
+      const previous = measurements.filter(m => m.ts >= fourteenDaysAgo && m.ts < sevenDaysAgo);
+
+      // 1. Trend analysis
+      if (recent.length >= 3) {
+        const recentAvg = recent.reduce((sum, m) => sum + m.pef, 0) / recent.length;
+
+        if (previous.length >= 3) {
+          const prevAvg = previous.reduce((sum, m) => sum + m.pef, 0) / previous.length;
+          const change = ((recentAvg - prevAvg) / prevAvg) * 100;
+
+          if (change <= -10) {
+            insights.push({
+              icon: '📉',
+              title: 'Nedåtgående trend',
+              text: `Dina värden har sjunkit ${Math.abs(Math.round(change))}% jämfört med förra veckan.`,
+              type: 'warning'
+            });
+          } else if (change >= 10) {
+            insights.push({
+              icon: '📈',
+              title: 'Uppåtgående trend',
+              text: `Dina värden har ökat ${Math.round(change)}% jämfört med förra veckan.`,
+              type: 'success'
+            });
+          } else {
+            insights.push({
+              icon: '➡️',
+              title: 'Stabila värden',
+              text: 'Dina värden har varit stabila den senaste veckan.',
+              type: 'info'
+            });
+          }
+        }
+      }
+
+      // 2. Variability analysis (kliniskt viktigt!)
+      if (recent.length >= 4) {
+        const values = recent.map(m => m.pef);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const variability = ((max - min) / mean) * 100;
+
+        if (variability > 20) {
+          insights.push({
+            icon: '⚠️',
+            title: 'Hög variabilitet',
+            text: `${Math.round(variability)}% variation mellan högsta och lägsta värde. >20% kan tyda på dåligt kontrollerad astma.`,
+            type: 'danger'
+          });
+        } else if (variability > 15) {
+          insights.push({
+            icon: '📊',
+            title: 'Måttlig variabilitet',
+            text: `${Math.round(variability)}% variation. Håll koll på utvecklingen.`,
+            type: 'warning'
+          });
+        } else {
+          insights.push({
+            icon: '✓',
+            title: 'Låg variabilitet',
+            text: `Endast ${Math.round(variability)}% variation - bra kontroll!`,
+            type: 'success'
+          });
+        }
+      }
+
+      // 3. Morning dip analysis
+      const morningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 5 && hour < 10;
+      }).slice(-14);
+
+      const eveningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 18 && hour < 23;
+      }).slice(-14);
+
+      if (morningMeasurements.length >= 3 && eveningMeasurements.length >= 3) {
+        const morningAvg = morningMeasurements.reduce((sum, m) => sum + m.pef, 0) / morningMeasurements.length;
+        const eveningAvg = eveningMeasurements.reduce((sum, m) => sum + m.pef, 0) / eveningMeasurements.length;
+        const dip = ((eveningAvg - morningAvg) / eveningAvg) * 100;
+
+        if (dip > 15) {
+          insights.push({
+            icon: '🌅',
+            title: 'Morgondipp',
+            text: `Morgonvärden är ${Math.round(dip)}% lägre än kvällsvärden. Detta kan tyda på nattlig astma.`,
+            type: 'warning'
+          });
+        } else if (dip > 8) {
+          insights.push({
+            icon: '🌅',
+            title: 'Visst morgondipp',
+            text: `Morgonvärden är ${Math.round(dip)}% lägre än kvällsvärden.`,
+            type: 'info'
+          });
+        }
+      }
+
+      // 4. Red zone warnings
+      const recentRed = recent.filter(m => m.zone === 'red');
+      if (recentRed.length >= 2) {
+        insights.push({
+          icon: '🚨',
+          title: 'Flera röda mätningar',
+          text: `${recentRed.length} mätningar i röd zon senaste veckan. Överväg att kontakta vården.`,
+          type: 'danger'
+        });
+      }
+
+      // 5. Good control
+      const allGreen = recent.length >= 5 && recent.every(m => m.zone === 'green');
+      if (allGreen) {
+        insights.push({
+          icon: '🎉',
+          title: 'Utmärkt kontroll',
+          text: 'Alla mätningar senaste veckan i grön zon. Fortsätt så!',
+          type: 'success'
+        });
+      }
+
+      // Render insights
+      if (insights.length === 0) {
+        insights.push({
+          icon: '📊',
+          title: 'Samlar data',
+          text: 'Fortsätt logga för mer detaljerade insikter.',
+          type: 'info'
+        });
+      }
+
+      container.innerHTML = insights.map(i => `
+        <div class="insight-item ${i.type}">
+          <div class="insight-icon">${i.icon}</div>
+          <div class="insight-content">
+            <div class="insight-title">${i.title}</div>
+            <div class="insight-text">${i.text}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // TensorFlow.js Prediction (Alternativ 2 - aktiveras vid 7+ mätningar över 5+ dagar)
+    async function initTensorFlow() {
+      if (measurements.length < 7 || isModelTraining || tfModel) return;
+
+      const predContainer = document.getElementById('predictionContainer');
+      const aiBadge = document.getElementById('aiBadge');
+
+      try {
+        isModelTraining = true;
+
+        // Prepare data
+        const daily = dailyBuckets();
+        if (daily.length < 5) return;
+
+        // Normalize data
+        const values = daily.map(d => d.best);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
+        const normalized = values.map(v => (v - min) / range);
+
+        // Create sequences (use last 3 days to predict next)
+        const sequenceLength = Math.min(3, daily.length - 2);
+        const xs = [];
+        const ys = [];
+
+        for (let i = 0; i < normalized.length - sequenceLength; i++) {
+          xs.push(normalized.slice(i, i + sequenceLength));
+          ys.push(normalized[i + sequenceLength]);
+        }
+
+        if (xs.length < 2) return;
+
+        // Build model
+        tfModel = tf.sequential();
+        tfModel.add(tf.layers.dense({ units: 16, activation: 'relu', inputShape: [sequenceLength] }));
+        tfModel.add(tf.layers.dense({ units: 8, activation: 'relu' }));
+        tfModel.add(tf.layers.dense({ units: 1 }));
+
+        tfModel.compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError' });
+
+        // Train
+        const xTensor = tf.tensor2d(xs);
+        const yTensor = tf.tensor1d(ys);
+
+        await tfModel.fit(xTensor, yTensor, {
+          epochs: 50,
+          verbose: 0
+        });
+
+        xTensor.dispose();
+        yTensor.dispose();
+
+        // Predict tomorrow
+        const lastSequence = normalized.slice(-sequenceLength);
+        const prediction = tfModel.predict(tf.tensor2d([lastSequence]));
+        const predValue = prediction.dataSync()[0];
+        prediction.dispose();
+
+        // Denormalize
+        const predictedPEF = Math.round(predValue * range + min);
+
+        // Calculate confidence based on model stability
+        const recentValues = values.slice(-7);
+        const recentStd = Math.sqrt(recentValues.reduce((sum, v) => sum + Math.pow(v - recentValues.reduce((a, b) => a + b, 0) / recentValues.length, 2), 0) / recentValues.length);
+        const confidence = Math.max(50, Math.min(95, 100 - (recentStd / 10)));
+
+        // Display prediction
+        document.getElementById('predictionValue').textContent = `${predictedPEF} L/min`;
+        document.getElementById('predictionConfidence').textContent = `Konfidensgrad: ${Math.round(confidence)}% baserat på ${daily.length} dagars data`;
+        predContainer.style.display = 'block';
+        aiBadge.style.display = 'inline-flex';
+
+      } catch (e) {
+        console.log('TensorFlow error:', e);
+      } finally {
+        isModelTraining = false;
+      }
+    }
+
+    function updateInsights() {
+      analyzePatterns();
+      initTensorFlow();
     }
 
     // ============================================
@@ -1771,25 +2902,19 @@
     });
 
     document.getElementById('pefInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        saveMeasurement();
-      }
+      if (e.key === 'Enter') saveMeasurement();
     });
 
     document.getElementById('pefInput').addEventListener('focus', (e) => {
       e.target.select();
     });
 
-    // Profile form listeners
-    ['profileSex', 'profileBirthYear', 'profileHeight'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updatePredictedDisplay);
+    ['profileBirthYear', 'profileBirthMonth', 'profileHeight', 'profileAlgorithm'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updatePredictedDisplay);
     });
 
-    // Close modal on overlay click
     document.getElementById('profileModal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) {
-        hideProfileModal();
-      }
+      if (e.target.classList.contains('modal-overlay')) hideProfileModal();
     });
 
     // ============================================
