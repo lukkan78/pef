@@ -1623,6 +1623,35 @@
     </div>
   </div>
 
+  <!-- Edit Symptom Modal -->
+  <div class="modal-overlay" id="editSymptomModal">
+    <div class="modal" style="max-width: 340px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Ändra status</h2>
+        <button class="btn-icon" onclick="hideEditSymptomModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <p id="editSymptomInfo" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;"></p>
+      <div class="symptom-buttons" id="editSymptomButtons">
+        <button type="button" class="symptom-btn" data-symptom="frisk" onclick="saveEditedSymptom('frisk')">
+          ✓ Frisk
+        </button>
+        <button type="button" class="symptom-btn" data-symptom="forkyld" onclick="saveEditedSymptom('forkyld')">
+          🤧 Förkyld
+        </button>
+        <button type="button" class="symptom-btn" data-symptom="hosta" onclick="saveEditedSymptom('hosta')">
+          😷 Hosta
+        </button>
+        <button type="button" class="symptom-btn" data-symptom="allergi" onclick="saveEditedSymptom('allergi')">
+          🌸 Allergi
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -2022,6 +2051,48 @@
       showToast('Mätning borttagen');
     }
 
+    let editingMeasurementId = null;
+
+    function editMeasurementSymptom(id) {
+      const measurement = measurements.find(m => m.id === id);
+      if (!measurement) return;
+
+      editingMeasurementId = id;
+
+      const date = new Date(measurement.ts);
+      const dateStr = date.toLocaleDateString('sv-SE');
+      const timeStr = date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
+      document.getElementById('editSymptomInfo').textContent =
+        `${measurement.pef} L/min - ${dateStr} kl ${timeStr}`;
+
+      // Mark current symptom as active
+      document.querySelectorAll('#editSymptomButtons .symptom-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.symptom === (measurement.symptom || 'frisk'));
+      });
+
+      document.getElementById('editSymptomModal').classList.add('active');
+    }
+
+    function hideEditSymptomModal() {
+      document.getElementById('editSymptomModal').classList.remove('active');
+      editingMeasurementId = null;
+    }
+
+    function saveEditedSymptom(symptom) {
+      if (!editingMeasurementId) return;
+
+      const measurement = measurements.find(m => m.id === editingMeasurementId);
+      if (measurement) {
+        measurement.symptom = symptom;
+        saveData();
+        updateUI();
+        showToast('Status uppdaterad!', 'success');
+      }
+
+      hideEditSymptomModal();
+    }
+
     function clearAllData() {
       if (!confirm('Är du säker på att du vill radera ALL data? Detta kan inte ångras.')) return;
 
@@ -2095,8 +2166,8 @@
         return `
           <div class="history-item">
             <div class="history-zone ${m.zone}"></div>
-            <div class="history-content">
-              <div class="history-value">${m.pef} L/min ${symptomEmoji}</div>
+            <div class="history-content" onclick="editMeasurementSymptom(${m.id})" style="cursor: pointer;">
+              <div class="history-value">${m.pef} L/min ${symptomEmoji || '<span style="opacity:0.4">✎</span>'}</div>
               <div class="history-time">${dateStr} kl ${timeStr}</div>
             </div>
             <button class="btn-icon history-delete" onclick="deleteMeasurement(${m.id})" title="Ta bort">
@@ -3497,6 +3568,10 @@
 
     document.getElementById('profileModal').addEventListener('click', (e) => {
       if (e.target.classList.contains('modal-overlay')) hideProfileModal();
+    });
+
+    document.getElementById('editSymptomModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) hideEditSymptomModal();
     });
 
     // ============================================
