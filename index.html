@@ -482,26 +482,24 @@
     /* Fullscreen Chart Modal */
     .chart-modal {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #ffffff;
-      z-index: 9999;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: var(--bg-primary) !important;
+      z-index: 99999 !important;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
       box-sizing: border-box;
-    }
-
-    .dark .chart-modal {
-      background: #1a1a2e;
+      margin: 0 !important;
+      transform: none !important;
     }
 
     .chart-modal.active {
-      display: flex;
+      display: flex !important;
       flex-direction: column;
     }
 
@@ -2826,12 +2824,16 @@
 
     function openChartModal() {
       const modal = document.getElementById('chartModal');
+      // Sätt bakgrundsfärg baserat på tema
+      modal.style.background = darkMode ? '#1a1a2e' : '#ffffff';
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
+      // Flytta modal till body för att undvika transform-problem
+      document.body.appendChild(modal);
       // Vänta tills modalen är renderad innan vi skapar diagrammet
       setTimeout(() => {
         updateModalChart();
-      }, 50);
+      }, 100);
     }
 
     function closeChartModal() {
