@@ -3876,6 +3876,15 @@
 
     loadData();
     updateUI();
+
+    // Stäng chart tooltip när man klickar utanför diagrammet
+    document.addEventListener('click', function(e) {
+      const canvas = document.getElementById('pefChart');
+      if (chart && canvas && !canvas.contains(e.target)) {
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        chart.update('none');
+      }
+    });
   </script>
 </body>
 </html>
