@@ -3163,6 +3163,33 @@
         y += 8;
       }
 
+      // AI-insikter
+      const insights = getInsightsData();
+      if (insights.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('AI-analys', 20, y);
+        y += 10;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+
+        insights.forEach(insight => {
+          doc.setFont('helvetica', 'bold');
+          doc.text(`• ${insight.title}`, 20, y);
+          y += 6;
+          doc.setFont('helvetica', 'normal');
+
+          // Wrap long text
+          const textLines = doc.splitTextToSize(insight.text, 170);
+          textLines.forEach(line => {
+            doc.text(line, 25, y);
+            y += 5;
+          });
+          y += 3;
+        });
+        y += 5;
+      }
+
       // Dygnsvariabilitet per dag
       const variabilityDetails = getDailyVariabilityDetails(measurements);
       if (variabilityDetails.length > 0) {
@@ -3575,6 +3602,107 @@
           </div>
         </div>
       `).join('');
+    }
+
+    // Get insights as data (for PDF export)
+    function getInsightsData() {
+      const insights = [];
+
+      if (measurements.length < 3) {
+        return insights;
+      }
+
+      const now = Date.now();
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+
+      const recent = measurements.filter(m => m.ts >= sevenDaysAgo);
+      const previous = measurements.filter(m => m.ts >= fourteenDaysAgo && m.ts < sevenDaysAgo);
+
+      // 1. Trend analysis
+      if (recent.length >= 3 && previous.length >= 3) {
+        const recentAvg = recent.reduce((sum, m) => sum + m.pef, 0) / recent.length;
+        const prevAvg = previous.reduce((sum, m) => sum + m.pef, 0) / previous.length;
+        const change = ((recentAvg - prevAvg) / prevAvg) * 100;
+
+        if (change <= -10) {
+          insights.push({ title: 'Nedåtgående trend', text: `Värden sjunkit ${Math.abs(Math.round(change))}% jämfört med förra veckan.` });
+        } else if (change >= 10) {
+          insights.push({ title: 'Uppåtgående trend', text: `Värden ökat ${Math.round(change)}% jämfört med förra veckan.` });
+        } else {
+          insights.push({ title: 'Stabila värden', text: 'Värdena har varit stabila den senaste veckan.' });
+        }
+      }
+
+      // 2. Variability analysis
+      if (recent.length >= 4) {
+        const values = recent.map(m => m.pef);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const variability = ((max - min) / mean) * 100;
+
+        if (variability > 20) {
+          insights.push({ title: 'Hög variabilitet', text: `${Math.round(variability)}% variation. >20% kan tyda på dåligt kontrollerad astma.` });
+        } else if (variability > 15) {
+          insights.push({ title: 'Måttlig variabilitet', text: `${Math.round(variability)}% variation.` });
+        } else {
+          insights.push({ title: 'Låg variabilitet', text: `Endast ${Math.round(variability)}% variation - bra kontroll.` });
+        }
+      }
+
+      // 3. Morning dip analysis
+      const morningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 5 && hour < 10;
+      }).slice(-14);
+
+      const eveningMeasurements = measurements.filter(m => {
+        const hour = new Date(m.ts).getHours();
+        return hour >= 18 && hour < 23;
+      }).slice(-14);
+
+      if (morningMeasurements.length >= 3 && eveningMeasurements.length >= 3) {
+        const morningAvg = morningMeasurements.reduce((sum, m) => sum + m.pef, 0) / morningMeasurements.length;
+        const eveningAvg = eveningMeasurements.reduce((sum, m) => sum + m.pef, 0) / eveningMeasurements.length;
+        if (eveningAvg > 0) {
+          const dip = ((eveningAvg - morningAvg) / eveningAvg) * 100;
+          if (dip > 15) {
+            insights.push({ title: 'Morgondipp', text: `Morgonvärden ${Math.round(dip)}% lägre än kvällsvärden. Kan tyda på nattlig astma.` });
+          } else if (dip > 8) {
+            insights.push({ title: 'Visst morgondipp', text: `Morgonvärden ${Math.round(dip)}% lägre än kvällsvärden.` });
+          }
+        }
+      }
+
+      // 4. Red zone warnings
+      const recentRed = recent.filter(m => m.zone === 'red');
+      if (recentRed.length >= 2) {
+        insights.push({ title: 'Varning', text: `${recentRed.length} mätningar i röd zon senaste veckan.` });
+      }
+
+      // 5. Symptom analysis
+      const symptomsRecent = recent.filter(m => m.symptom && m.symptom !== 'frisk');
+      const healthyRecent = recent.filter(m => !m.symptom || m.symptom === 'frisk');
+
+      if (symptomsRecent.length >= 2 && healthyRecent.length >= 2) {
+        const symptomAvg = symptomsRecent.reduce((sum, m) => sum + m.pef, 0) / symptomsRecent.length;
+        const healthyAvg = healthyRecent.reduce((sum, m) => sum + m.pef, 0) / healthyRecent.length;
+        if (healthyAvg > 0) {
+          const drop = ((healthyAvg - symptomAvg) / healthyAvg) * 100;
+          if (drop > 5) {
+            insights.push({ title: 'Symptompåverkan', text: `Vid symptom sjunker PEF med ca ${Math.round(drop)}%.` });
+          }
+        }
+      }
+
+      // 6. Good control
+      const allGreen = recent.length >= 5 && recent.every(m => m.zone === 'green');
+      if (allGreen) {
+        insights.push({ title: 'Utmärkt kontroll', text: 'Alla mätningar senaste veckan i grön zon.' });
+      }
+
+      return insights;
     }
 
     // TensorFlow.js Prediction (Alternativ 2 - aktiveras vid 7+ mätningar över 5+ dagar)
