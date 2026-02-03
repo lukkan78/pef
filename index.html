@@ -460,6 +460,77 @@
       margin: 16px 0;
     }
 
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .expand-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .expand-btn:hover {
+      background: var(--bg-tertiary);
+    }
+
+    /* Fullscreen Chart Modal */
+    .chart-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      z-index: 1000;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .chart-modal.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-modal-title {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .chart-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 8px;
+    }
+
+    .chart-modal-body {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-modal-canvas {
+      flex: 1;
+      min-height: 0;
+    }
+
     /* History List */
     .history-list {
       max-height: 300px;
@@ -1312,13 +1383,18 @@
       <!-- Statistik Section -->
       <section id="sectionStats" class="section" style="display:none">
         <div class="card">
-          <div class="card-header">
+          <div class="card-header chart-header">
             <span class="card-title">
               <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
               Utveckling
             </span>
+            <button class="expand-btn" onclick="openChartModal()" title="Förstora diagram">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+              </svg>
+            </button>
           </div>
 
           <div class="ref-selector">
@@ -1686,6 +1762,23 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- Fullscreen Chart Modal -->
+  <div class="chart-modal" id="chartModal">
+    <div class="chart-modal-header">
+      <span class="chart-modal-title">Utveckling</span>
+      <button class="chart-modal-close" onclick="closeChartModal()">&times;</button>
+    </div>
+    <div class="chart-modal-body">
+      <div class="ref-selector" style="margin-bottom: 12px;">
+        <button class="ref-option active" data-ref="personal" onclick="setRefMode('personal')">% av personbästa</button>
+        <button class="ref-option" data-ref="predicted" onclick="setRefMode('predicted')">% av förväntat</button>
+      </div>
+      <div class="chart-modal-canvas">
+        <canvas id="pefChartModal"></canvas>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ============================================
     // Data Management
@@ -1705,6 +1798,7 @@
       medicationHistory: []
     };
     let chart = null;
+    let modalChart = null;
     let refMode = 'personal';
     let deferredPrompt = null;
     let darkMode = false;
@@ -2715,7 +2809,180 @@
       saveData();
 
       updateChart();
+      updateModalChart();
       updateStatistics();
+    }
+
+    function openChartModal() {
+      const modal = document.getElementById('chartModal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      updateModalChart();
+    }
+
+    function closeChartModal() {
+      const modal = document.getElementById('chartModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function updateModalChart() {
+      const modal = document.getElementById('chartModal');
+      if (!modal.classList.contains('active')) return;
+
+      const canvas = document.getElementById('pefChartModal');
+      const ctx = canvas.getContext('2d');
+
+      if (modalChart) {
+        modalChart.destroy();
+      }
+
+      const daily = dailyBuckets();
+      if (daily.length === 0) return;
+
+      let reference = profile.predicted;
+      const refLabel = refMode === 'predicted' ? 'förväntat' : 'personbästa';
+
+      if (refMode === 'personal') {
+        reference = profile.personalBest;
+      }
+
+      if (!reference || reference <= 0) return;
+
+      const last30 = daily.slice(-30);
+      const last30WithPercent = last30.map(d => ({
+        ...d,
+        percent: Math.round((d.best / reference) * 100)
+      }));
+
+      const r7 = rollingAverage(last30WithPercent, 7, 'percent');
+
+      const labels = last30.map(d => {
+        const date = new Date(d.day);
+        return date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+      });
+
+      const maxPercent = Math.max(...last30WithPercent.map(d => d.percent), 100);
+      const maxY = Math.round(Math.max(maxPercent * 1.1, 120));
+      const greenLine = 80;
+      const yellowLine = 50;
+
+      const textColor = darkMode ? '#e5e7eb' : '#374151';
+      const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+      const morningData = last30WithPercent.map(d => d.morning !== null ? Math.round((d.morning / reference) * 100) : null);
+      const eveningData = last30WithPercent.map(d => d.evening !== null ? Math.round((d.evening / reference) * 100) : null);
+
+      modalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Morgon',
+              data: morningData,
+              borderColor: '#f97316',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 5,
+              pointBackgroundColor: '#f97316',
+              tension: 0.3,
+              spanGaps: true
+            },
+            {
+              label: 'Kväll',
+              data: eveningData,
+              borderColor: '#8b5cf6',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 5,
+              pointBackgroundColor: '#8b5cf6',
+              tension: 0.3,
+              spanGaps: true
+            },
+            {
+              label: '7-dagars medel',
+              data: r7.map(d => d.value),
+              borderColor: '#6366f1',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.3,
+              borderDash: [5, 5]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: maxY,
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: textColor }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: { boxWidth: 12, padding: 16, color: textColor }
+            },
+            tooltip: {
+              backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
+              titleColor: darkMode ? '#111' : '#fff',
+              bodyColor: darkMode ? '#111' : '#fff',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const percent = context.raw;
+                  if (percent === null) return null;
+                  const dayData = last30[idx];
+                  if (context.datasetIndex === 0 && dayData?.morning) {
+                    return `Morgon: ${percent}% (${dayData.morning} L/min)`;
+                  } else if (context.datasetIndex === 1 && dayData?.evening) {
+                    return `Kväll: ${percent}% (${dayData.evening} L/min)`;
+                  }
+                  return `${context.dataset.label}: ${percent}%`;
+                }
+              }
+            }
+          }
+        },
+        plugins: [{
+          id: 'zoneBands',
+          beforeDraw(chart) {
+            const { ctx, chartArea, scales } = chart;
+            if (!chartArea) return;
+
+            const y = scales.y;
+
+            ctx.fillStyle = darkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(maxY), chartArea.right - chartArea.left, y.getPixelForValue(greenLine) - y.getPixelForValue(maxY));
+
+            ctx.fillStyle = darkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(greenLine), chartArea.right - chartArea.left, y.getPixelForValue(yellowLine) - y.getPixelForValue(greenLine));
+
+            ctx.fillStyle = darkMode ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)';
+            ctx.fillRect(chartArea.left, y.getPixelForValue(yellowLine), chartArea.right - chartArea.left, y.getPixelForValue(0) - y.getPixelForValue(yellowLine));
+          }
+        }]
+      });
     }
 
     // ============================================
