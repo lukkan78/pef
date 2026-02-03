@@ -3567,7 +3567,7 @@
 
       // Dygnsvariabilitet per dag
       const variabilityDetails = getDailyVariabilityDetails(measurements);
-      if (variabilityDetails.length > 0) {
+      if (variabilityDetails.length > 0 && typeof doc.autoTable === 'function') {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text('Dygnsvariabilitet', 20, y);
@@ -3584,30 +3584,44 @@
           let status = 'Bra';
           if (d.variability >= 20) status = 'Hög';
           else if (d.variability >= 10) status = 'Måttlig';
-          return [dateStr, `${d.morning}`, `${d.evening}`, `${d.variability}%`, status];
+          return [dateStr, `${d.morning || '-'}`, `${d.evening || '-'}`, `${d.variability}%`, status];
         });
 
-        doc.autoTable({
-          startY: y,
-          head: [['Datum', 'Morgon', 'Kväll', 'Variabilitet', 'Status']],
-          body: variabilityTableData,
-          styles: { fontSize: 9 },
-          headStyles: { fillColor: [99, 102, 241] },
-          columnStyles: {
-            4: { fontStyle: 'bold' }
+        try {
+          doc.autoTable({
+            startY: y,
+            head: [['Datum', 'Morgon', 'Kväll', 'Variabilitet', 'Status']],
+            body: variabilityTableData,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [99, 102, 241] },
+            columnStyles: {
+              4: { fontStyle: 'bold' }
+            }
+          });
+
+          if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+            y = doc.lastAutoTable.finalY + 15;
+          } else {
+            y += 50;
           }
-        });
-
-        y = doc.lastAutoTable.finalY + 15;
+        } catch (tableError) {
+          console.error('Variability table error:', tableError);
+          y += 20;
+        }
       }
 
       const chartCanvas = document.getElementById('pefChart');
-      if (chartCanvas) {
-        const chartImg = chartCanvas.toDataURL('image/png', 1.0);
-        const imgWidth = 170;
-        const imgHeight = (chartCanvas.height / chartCanvas.width) * imgWidth;
-        doc.addImage(chartImg, 'PNG', 20, y, imgWidth, imgHeight);
-        y += imgHeight + 15;
+      if (chartCanvas && chartCanvas.width > 0 && chartCanvas.height > 0) {
+        try {
+          const chartImg = chartCanvas.toDataURL('image/png', 1.0);
+          const imgWidth = 170;
+          const imgHeight = (chartCanvas.height / chartCanvas.width) * imgWidth;
+          doc.addImage(chartImg, 'PNG', 20, y, imgWidth, imgHeight);
+          y += imgHeight + 15;
+        } catch (chartError) {
+          console.error('Chart image error:', chartError);
+          y += 15;
+        }
       }
 
       if (y > 250) {
@@ -3643,13 +3657,19 @@
           ];
         });
 
-      doc.autoTable({
-        startY: y,
-        head: [['Datum', 'Tid', 'Värde', '%', 'Zon', 'Status']],
-        body: tableData,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [99, 102, 241] }
-      });
+      if (typeof doc.autoTable === 'function') {
+        try {
+          doc.autoTable({
+            startY: y,
+            head: [['Datum', 'Tid', 'Värde', '%', 'Zon', 'Status']],
+            body: tableData,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [99, 102, 241] }
+          });
+        } catch (tableError) {
+          console.error('Measurements table error:', tableError);
+        }
+      }
 
       doc.save(`pef-rapport-${new Date().toISOString().slice(0, 10)}.pdf`);
       showToast('PDF-rapport skapad!', 'success');
