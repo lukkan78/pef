@@ -2824,8 +2824,41 @@
 
     function openChartModal() {
       const modal = document.getElementById('chartModal');
-      // Sätt bakgrundsfärg baserat på tema
-      modal.style.background = darkMode ? '#1a1a2e' : '#ffffff';
+      const header = modal.querySelector('.chart-modal-header');
+      const closeBtn = modal.querySelector('.chart-modal-close');
+      const refBtns = modal.querySelectorAll('.ref-option');
+
+      // Sätt färger baserat på tema
+      if (darkMode) {
+        modal.style.background = '#1a1a2e';
+        modal.style.color = '#e5e7eb';
+        header.style.borderColor = '#374151';
+        closeBtn.style.color = '#e5e7eb';
+        refBtns.forEach(btn => {
+          btn.style.background = '#252542';
+          btn.style.borderColor = '#374151';
+          btn.style.color = '#e5e7eb';
+        });
+      } else {
+        modal.style.background = '#ffffff';
+        modal.style.color = '#111827';
+        header.style.borderColor = '#e5e7eb';
+        closeBtn.style.color = '#111827';
+        refBtns.forEach(btn => {
+          btn.style.background = '#f9fafb';
+          btn.style.borderColor = '#e5e7eb';
+          btn.style.color = '#111827';
+        });
+      }
+
+      // Uppdatera aktiv-knapp stil
+      refBtns.forEach(btn => {
+        if (btn.classList.contains('active')) {
+          btn.style.borderColor = '#6366f1';
+          btn.style.color = '#6366f1';
+        }
+      });
+
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
       // Flytta modal till body för att undvika transform-problem
