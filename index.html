@@ -3073,6 +3073,20 @@
         y += 8;
       }
 
+      // Medicinering
+      if (profile.currentMedication && profile.currentMedication.inhaler) {
+        const medName = profile.currentMedication.inhaler === 'other'
+          ? profile.currentMedication.customName
+          : getInhalerName(profile.currentMedication.inhaler);
+        const medStrength = profile.currentMedication.strength || '';
+        doc.text(`Aktuell medicinering: ${medName} ${medStrength}`, 20, y);
+        y += 8;
+        if (profile.currentMedication.startDate) {
+          doc.text(`Sedan: ${profile.currentMedication.startDate}`, 20, y);
+          y += 8;
+        }
+      }
+
       y += 10;
 
       doc.setFontSize(14);
@@ -3098,7 +3112,54 @@
 
       doc.text(`Grön zon: ${Math.round(100 * greenCount / measurements.length)}%`, 20, y); y += 7;
       doc.text(`Gul zon: ${Math.round(100 * yellowCount / measurements.length)}%`, 20, y); y += 7;
-      doc.text(`Röd zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 15;
+      doc.text(`Röd zon: ${Math.round(100 * redCount / measurements.length)}%`, 20, y); y += 10;
+
+      // Procent-statistik
+      const reference = profile.predicted || profile.personalBest;
+      if (reference && reference > 0) {
+        const avgPct = Math.round((avg / reference) * 100);
+        const lowPct = Math.round((low / reference) * 100);
+        doc.text(`Snitt % av förväntat: ${avgPct}%`, 20, y); y += 7;
+        doc.text(`Lägsta % av förväntat: ${lowPct}%`, 20, y); y += 7;
+      }
+      if (profile.personalBest && profile.personalBest > 0) {
+        const avgPctBest = Math.round((avg / profile.personalBest) * 100);
+        doc.text(`Snitt % av personbästa: ${avgPctBest}%`, 20, y); y += 7;
+      }
+      y += 8;
+
+      // Symptom-sammanfattning
+      const symptomMeasurements = measurements.filter(m => m.symptom && m.symptom !== 'frisk');
+      const healthyMeasurements = measurements.filter(m => !m.symptom || m.symptom === 'frisk');
+      if (symptomMeasurements.length > 0 || healthyMeasurements.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Symptom', 20, y);
+        y += 10;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(`Friska mätningar: ${healthyMeasurements.length}`, 20, y); y += 7;
+        doc.text(`Mätningar med symptom: ${symptomMeasurements.length}`, 20, y); y += 7;
+
+        if (symptomMeasurements.length > 0 && healthyMeasurements.length > 0) {
+          const healthyAvg = Math.round(healthyMeasurements.reduce((sum, m) => sum + m.pef, 0) / healthyMeasurements.length);
+          const symptomAvg = Math.round(symptomMeasurements.reduce((sum, m) => sum + m.pef, 0) / symptomMeasurements.length);
+          const diff = Math.round(((healthyAvg - symptomAvg) / healthyAvg) * 100);
+          doc.text(`Snitt PEF frisk: ${healthyAvg} L/min`, 20, y); y += 7;
+          doc.text(`Snitt PEF med symptom: ${symptomAvg} L/min`, 20, y); y += 7;
+          doc.text(`Skillnad: ${diff}% lägre vid symptom`, 20, y); y += 7;
+        }
+
+        // Symptom-fördelning
+        const forkyldCount = symptomMeasurements.filter(m => m.symptom === 'forkyld').length;
+        const hostaCount = symptomMeasurements.filter(m => m.symptom === 'hosta').length;
+        const allergiCount = symptomMeasurements.filter(m => m.symptom === 'allergi').length;
+        if (forkyldCount > 0) doc.text(`  - Förkyld: ${forkyldCount} mätningar`, 20, y), y += 7;
+        if (hostaCount > 0) doc.text(`  - Hosta: ${hostaCount} mätningar`, 20, y), y += 7;
+        if (allergiCount > 0) doc.text(`  - Allergi: ${allergiCount} mätningar`, 20, y), y += 7;
+        y += 8;
+      }
 
       // Dygnsvariabilitet per dag
       const variabilityDetails = getDailyVariabilityDetails(measurements);
@@ -3162,20 +3223,27 @@
           const date = new Date(m.ts);
           const ref = profile.predicted || profile.personalBest || 500;
           const pct = Math.round(100 * m.pef / ref);
+          const symptomText = {
+            'frisk': '',
+            'forkyld': 'Förkyld',
+            'hosta': 'Hosta',
+            'allergi': 'Allergi'
+          }[m.symptom] || '';
           return [
             date.toLocaleDateString('sv-SE'),
             date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }),
             `${m.pef} L/min`,
             `${pct}%`,
-            m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd'
+            m.zone === 'green' ? 'Grön' : m.zone === 'yellow' ? 'Gul' : 'Röd',
+            symptomText
           ];
         });
 
       doc.autoTable({
         startY: y,
-        head: [['Datum', 'Tid', 'Värde', '% av ref', 'Zon']],
+        head: [['Datum', 'Tid', 'Värde', '%', 'Zon', 'Status']],
         body: tableData,
-        styles: { fontSize: 9 },
+        styles: { fontSize: 8 },
         headStyles: { fillColor: [99, 102, 241] }
       });
 
