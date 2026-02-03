@@ -3879,10 +3879,14 @@
 
     // Stäng chart tooltip när man klickar utanför diagrammet
     document.addEventListener('click', function(e) {
-      const canvas = document.getElementById('pefChart');
-      if (chart && canvas && !canvas.contains(e.target)) {
-        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-        chart.update('none');
+      try {
+        const canvas = document.getElementById('pefChart');
+        if (chart && chart.tooltip && canvas && !canvas.contains(e.target)) {
+          chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+          chart.update('none');
+        }
+      } catch (err) {
+        // Ignorera fel
       }
     });
   </script>
