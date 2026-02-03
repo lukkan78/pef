@@ -524,11 +524,14 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .chart-modal-canvas {
       flex: 1;
       min-height: 0;
+      position: relative;
+      width: 100%;
     }
 
     /* History List */
@@ -2817,7 +2820,10 @@
       const modal = document.getElementById('chartModal');
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
-      updateModalChart();
+      // Vänta tills modalen är renderad innan vi skapar diagrammet
+      setTimeout(() => {
+        updateModalChart();
+      }, 50);
     }
 
     function closeChartModal() {
