@@ -1363,28 +1363,33 @@
               <div class="stat-value" id="statYellow" style="color: var(--warning);">0%</div>
               <div class="stat-label">Gul zon</div>
             </div>
-            <div class="stat-box">
-              <div class="stat-value" id="statAvgPctPredicted">--%</div>
-              <div class="stat-label">% av förväntat</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value" id="statAvgPctBest">--%</div>
-              <div class="stat-label">% av personbästa</div>
-            </div>
-          </div>
-
-          <div class="stats-grid" style="margin-top: 8px;">
-            <div class="stat-box">
-              <div class="stat-value" id="statLowPct">--%</div>
-              <div class="stat-label">Lägsta %</div>
-            </div>
             <div class="stat-box" style="cursor: pointer;" onclick="toggleVariabilityDetails()">
               <div class="stat-value" id="statVariability">--%</div>
-              <div class="stat-label">Variabilitet <span style="font-size: 10px; opacity: 0.7;">(detaljer)</span></div>
+              <div class="stat-label">Variabilitet <span style="font-size: 10px; opacity: 0.7;">▼</span></div>
+            </div>
+            <div class="stat-box" style="cursor: pointer;" onclick="toggleMoreStats()">
+              <div class="stat-value" style="font-size: 16px;">📊</div>
+              <div class="stat-label">Mer statistik <span style="font-size: 10px; opacity: 0.7;" id="moreStatsArrow">▼</span></div>
             </div>
           </div>
           <div id="variabilityDetails" style="display: none; margin-top: 8px;">
             <div class="variability-list" id="variabilityList"></div>
+          </div>
+          <div id="moreStatsDetails" style="display: none; margin-top: 8px;">
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="stat-value" id="statAvgPctPredicted">--%</div>
+                <div class="stat-label">% av förväntat</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value" id="statAvgPctBest">--%</div>
+                <div class="stat-label">% av personbästa</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value" id="statLowPct">--%</div>
+                <div class="stat-label">Lägsta %</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2367,6 +2372,7 @@
     }
 
     let showVariabilityDetails = false;
+    let showMoreStats = false;
 
     function toggleVariabilityDetails() {
       showVariabilityDetails = !showVariabilityDetails;
@@ -2376,6 +2382,14 @@
       if (showVariabilityDetails) {
         updateVariabilityList();
       }
+    }
+
+    function toggleMoreStats() {
+      showMoreStats = !showMoreStats;
+      const container = document.getElementById('moreStatsDetails');
+      const arrow = document.getElementById('moreStatsArrow');
+      container.style.display = showMoreStats ? 'block' : 'none';
+      if (arrow) arrow.textContent = showMoreStats ? '▲' : '▼';
     }
 
     function updateVariabilityList() {
@@ -2428,21 +2442,32 @@
 
       for (const m of measurements) {
         const d = new Date(m.ts);
+        const hour = d.getHours();
         d.setHours(0, 0, 0, 0);
         const key = d.toISOString();
 
         if (!byDay.has(key)) {
-          byDay.set(key, []);
+          byDay.set(key, { all: [], morning: [], evening: [] });
         }
-        byDay.get(key).push(m.pef);
+        const bucket = byDay.get(key);
+        bucket.all.push(m.pef);
+
+        // Morgon: 05:00-10:00, Kväll: 17:00-23:00
+        if (hour >= 5 && hour < 10) {
+          bucket.morning.push(m.pef);
+        } else if (hour >= 17 && hour < 23) {
+          bucket.evening.push(m.pef);
+        }
       }
 
       return [...byDay.entries()]
-        .map(([iso, arr]) => ({
+        .map(([iso, bucket]) => ({
           day: iso,
-          best: Math.max(...arr),
-          mean: Math.round(arr.reduce((a, b) => a + b, 0) / arr.length),
-          count: arr.length
+          best: Math.max(...bucket.all),
+          mean: Math.round(bucket.all.reduce((a, b) => a + b, 0) / bucket.all.length),
+          count: bucket.all.length,
+          morning: bucket.morning.length > 0 ? Math.max(...bucket.morning) : null,
+          evening: bucket.evening.length > 0 ? Math.max(...bucket.evening) : null
         }))
         .sort((a, b) => a.day.localeCompare(b.day));
     }
@@ -2554,26 +2579,41 @@
 
       const refLabel = refMode === 'predicted' ? 'förväntat' : 'personbästa';
 
+      // Morgon och kväll i procent
+      const morningData = last30WithPercent.map(d => d.morning !== null ? Math.round((d.morning / reference) * 100) : null);
+      const eveningData = last30WithPercent.map(d => d.evening !== null ? Math.round((d.evening / reference) * 100) : null);
+
       chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
           datasets: [
             {
-              label: `% av ${refLabel}`,
-              data: last30WithPercent.map(d => d.percent),
-              borderColor: '#6366f1',
-              backgroundColor: darkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)',
+              label: 'Morgon',
+              data: morningData,
+              borderColor: '#f97316',
+              backgroundColor: 'transparent',
               borderWidth: 2,
               pointRadius: 4,
-              pointBackgroundColor: '#6366f1',
+              pointBackgroundColor: '#f97316',
               tension: 0.3,
-              fill: true
+              spanGaps: true
+            },
+            {
+              label: 'Kväll',
+              data: eveningData,
+              borderColor: '#8b5cf6',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#8b5cf6',
+              tension: 0.3,
+              spanGaps: true
             },
             {
               label: '7-dagars medel',
               data: r7.map(d => d.value),
-              borderColor: '#f59e0b',
+              borderColor: '#6366f1',
               borderWidth: 2,
               pointRadius: 0,
               tension: 0.3,
@@ -2584,6 +2624,13 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          onClick: function(evt, elements) {
+            // Stäng tooltip när man klickar på tom yta
+            if (elements.length === 0) {
+              this.tooltip.setActiveElements([], { x: 0, y: 0 });
+              this.update();
+            }
+          },
           interaction: {
             intersect: false,
             mode: 'index'
@@ -2621,11 +2668,14 @@
                 label: function(context) {
                   const idx = context.dataIndex;
                   const percent = context.raw;
-                  const absolute = last30[idx]?.best || 0;
-                  if (context.datasetIndex === 0) {
-                    return `${percent}% (${absolute} L/min)`;
+                  if (percent === null) return null;
+                  const dayData = last30[idx];
+                  if (context.datasetIndex === 0 && dayData?.morning) {
+                    return `Morgon: ${percent}% (${dayData.morning} L/min)`;
+                  } else if (context.datasetIndex === 1 && dayData?.evening) {
+                    return `Kväll: ${percent}% (${dayData.evening} L/min)`;
                   }
-                  return `${percent}%`;
+                  return `${context.dataset.label}: ${percent}%`;
                 }
               }
             }
