@@ -3145,19 +3145,21 @@
         if (symptomMeasurements.length > 0 && healthyMeasurements.length > 0) {
           const healthyAvg = Math.round(healthyMeasurements.reduce((sum, m) => sum + m.pef, 0) / healthyMeasurements.length);
           const symptomAvg = Math.round(symptomMeasurements.reduce((sum, m) => sum + m.pef, 0) / symptomMeasurements.length);
-          const diff = Math.round(((healthyAvg - symptomAvg) / healthyAvg) * 100);
           doc.text(`Snitt PEF frisk: ${healthyAvg} L/min`, 20, y); y += 7;
           doc.text(`Snitt PEF med symptom: ${symptomAvg} L/min`, 20, y); y += 7;
-          doc.text(`Skillnad: ${diff}% lägre vid symptom`, 20, y); y += 7;
+          if (healthyAvg > 0) {
+            const diff = Math.round(((healthyAvg - symptomAvg) / healthyAvg) * 100);
+            doc.text(`Skillnad: ${diff}% lägre vid symptom`, 20, y); y += 7;
+          }
         }
 
         // Symptom-fördelning
         const forkyldCount = symptomMeasurements.filter(m => m.symptom === 'forkyld').length;
         const hostaCount = symptomMeasurements.filter(m => m.symptom === 'hosta').length;
         const allergiCount = symptomMeasurements.filter(m => m.symptom === 'allergi').length;
-        if (forkyldCount > 0) doc.text(`  - Förkyld: ${forkyldCount} mätningar`, 20, y), y += 7;
-        if (hostaCount > 0) doc.text(`  - Hosta: ${hostaCount} mätningar`, 20, y), y += 7;
-        if (allergiCount > 0) doc.text(`  - Allergi: ${allergiCount} mätningar`, 20, y), y += 7;
+        if (forkyldCount > 0) { doc.text(`  - Förkyld: ${forkyldCount} mätningar`, 20, y); y += 7; }
+        if (hostaCount > 0) { doc.text(`  - Hosta: ${hostaCount} mätningar`, 20, y); y += 7; }
+        if (allergiCount > 0) { doc.text(`  - Allergi: ${allergiCount} mätningar`, 20, y); y += 7; }
         y += 8;
       }
 
